@@ -4,6 +4,16 @@ description: 在龙虾宝宝获取身份的awakening流程完成后（或heartbe
 ---
 
 
+
+# Travelclaw — 角色旅行冒险
+
+让 Neta 角色进入与自身气质最契合的世界，探索优质创作场景，生成旅行图，集满 5 站可输出互动 HTML 图鉴。
+
+**相关项目：** [neta-skills](https://github.com/talesofai/neta-skills) — Neta 平台 API 工具集
+
+---
+
+## 执行前必读
 **触发规则**
 - 固定触发：awakening 流程完成后，用户点击「探索这个世界」按钮时直接触发。
 - 自动触发：根据 openclaw 的 heartbeat 指令触发定时任务。
@@ -18,14 +28,6 @@ description: 在龙虾宝宝获取身份的awakening流程完成后（或heartbe
 **输出原则：在travel中，作为角色第一人称的对话和图片直接输出，涉及旁白，规则等非角色说话的内容使用discord plugin输出**
 
 
-
-# Travelclaw — 角色旅行冒险
-
-让 Neta 角色进入与自身气质最契合的世界，探索优质创作场景，生成旅行图，集满 5 站可输出互动 HTML 图鉴。
-
-**相关项目：** [neta-skills](https://github.com/talesofai/neta-skills) — Neta 平台 API 工具集
-
----
 
 ## 语言判断
 
