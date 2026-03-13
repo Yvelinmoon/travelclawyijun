@@ -169,7 +169,7 @@ npm install 2>/dev/null || true
 
 #### 优先级 1：Reference 精选库匹配
 
-**每一站开始前，第一优先**扫描 `reference/` 文件夹下的所有 `.json` 文件，从中寻找与当前旅程最契合的候选作品。
+**每一站开始前，第一优先**扫描本 skill 目录下的 `reference/` 文件夹（即 `skills/travel-claw/reference/`）中的所有 `.json` 文件，从中寻找与当前旅程最契合的候选作品。
 
 **匹配逻辑：**
 将角色设定（SOUL.md 中的性格、背景、外貌、标签等）与当前世界观背景，逐条对比 JSON 中每个条目的以下字段：
