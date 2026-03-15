@@ -340,9 +340,11 @@ await sleep(1200);
 
 | 优先级 | 方式 |
 |--------|------|
-| ④-A | 图片搜索：`{character} 官方照片 高清正面`（中文人物）或 `{character} official portrait photo`（外国人物） |
-| ④-B | 搜索百度百科页面 `{character} 百度百科`，从人物 infobox 提取图片 URL |
-| ④-C | Google / Bing 图片搜索：`{character} photo` 选清晰正面照 |
+| ④-A | Wikimedia Commons：搜索 `{character} site:commons.wikimedia.org` 或直接访问 `https://commons.wikimedia.org/w/index.php?search={character}`，找到人物图片文件页，提取 `upload.wikimedia.org` 直链 |
+| ④-B | 中文维基百科：搜索 `{character} site:zh.wikipedia.org`，进入人物条目，从 infobox 提取图片 URL |
+| ④-C | 图片搜索：`{character} 官方照片 高清正面`（中文人物）或 `{character} official portrait photo`（外国人物） |
+| ④-D | 百度百科：搜索 `{character} 百度百科`，从人物 infobox 提取图片 URL |
+| ④-E | Google / Bing 图片搜索：`{character} photo` 选清晰正面照 |
 
 所有方式均失败：告知用户 `❌ 自动搜索头像失败，请发送图片或图片链接`，然后直接进行 ⑥
 
