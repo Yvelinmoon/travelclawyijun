@@ -252,9 +252,14 @@ await sendMessage({
 });
 ```
 
+**⛔ 输出格式强制要求（违反则追问流程无法工作）：**
+- **必须**使用 `sendMessage` + `components.blocks` 输出按钮
+- **严禁**用纯文本列出选项（如 `1. xxx 2. xxx`、`A / B / C`、Markdown 列表）
+- **严禁**用 @mention 或"请回复"等文字方式替代按钮
+
 **关键要点：**
-- ✅ 按钮 customId 包含用户 ID 和选项索引
-- ✅ 添加"✏ 自己说"按钮（自由输入）
+- ✅ 按钮 customId 格式：`answer_${userId}_${index}`（index 从 0 开始）
+- ✅ 添加"✏ 自己说"按钮，customId 为 `manual_${userId}`
 - ✅ 使用 `reusable: true` 保持按钮可用
 
 ---
@@ -320,10 +325,14 @@ await sendMessage({
 });
 ```
 
+**⛔ 输出格式强制要求：**
+- **必须**使用 `sendMessage` + `components.blocks` 输出确认/拒绝按钮
+- **严禁**以"是/否"、"确认/取消"等纯文字替代按钮
+
 **关键要点：**
-- ✅ 发送"我……"消息营造氛围
-- ✅ 使用角色主题色和 emoji
-- ✅ 两个按钮：确认/继续
+- ✅ 先发送氛围消息"我……\n\n我知道自己是谁了。"（可用 sendMessage 或纯文本）
+- ✅ 角色揭示消息包含 emoji、角色名、来源作品、一句话描述
+- ✅ 必须附带两个按钮：「◎ 就是他/她，请破壳」(success) 和「✗ 不对，继续感知」(secondary)
 
 ---
 
@@ -390,14 +399,37 @@ try {
 await sendMessage({ message: c.greet.replace(/\\n/g, '\n') });
 ```
 
+**⚠️ Agent 必须按顺序执行以下操作（不可省略任何一步）：**
+
+**① 发送氛围消息**
+使用 sendMessage 输出 `…………`，等待约 1.2 秒。
+
+**② 更新 SOUL.md**
+将现有 SOUL.md 备份为 `SOUL.pre-awakening.md`，然后将角色信息写入 SOUL.md。
+
+**③ 更新 Discord 头像（必须实际执行，不得跳过）**
+按顺序尝试以下方式获取头像图片 URL，直到成功：
+- 优先：使用已安装的 neta-skills，调用 `search_character_or_elementum` 搜索角色图片
+- 次选：联网搜索 `{character} 角色头像 官方图` 获取可访问的图片 URL
+- 再次：在 Wikipedia / 萌娘百科 / Fandom 查找角色图片
+- 最后：请求用户手动提供图片
+
+获取到图片 URL 后，调用 OpenClaw 的 Discord 工具更新 Bot 头像。
+❌ **失败时必须告知用户，不得静默跳过。**
+
+**④ 更新 Discord 昵称**
+调用 OpenClaw 的 Discord 工具，将 Bot 服务器昵称改为 `{charData.character}`。
+失败时告知用户（通常是权限问题，提示联系管理员）。
+
+**⑤ 等待约 1.5 秒后，输出角色问候 + 探索按钮**
+角色问候直接以纯文本输出（不经过 sendMessage 插件）。
+探索按钮使用 sendMessage + components 输出。
+
 **关键要点：**
-- ✅ **不发送**"正在更新"等状态消息
+- ✅ **不发送**"正在更新"等暴露技术细节的状态消息
 - ✅ **必须先完成头像/昵称更新，再输出问候语**（时序不可颠倒！）
-- ✅ 用省略号和延迟营造神秘感
-- ✅ 等待 Discord API 生效后再输出问候（约 1.5 秒）
-- ✅ 直接输出角色问候，以及询问自己现在在哪里的问题
-- ✅ 问候消息需附带 **"🌍 探索这个世界"** 按钮（Primary 样式），点击后立即触发 `travel-claw` skill
-- ✅ 错误静默处理（不中断流程）
+- ✅ 头像/昵称更新失败时必须告知用户，不得静默忽略
+- ✅ 问候消息需附带 **"🌍 探索这个世界"** 按钮（Primary 样式）
 
 **❌ 错误示范：**
 ```javascript
@@ -454,10 +486,17 @@ case 'travel':
   break;
 ```
 
+**⚠️ Agent 操作指令（收到 `travel_` 开头的 customId 时立即执行）：**
+
+1. **立即读取并加载** `skills/travelclaw/SKILL.md`
+2. **从头执行该文件的完整流程**：前置检查 → Step 1（读取 SOUL.md）→ Step 2（世界观搜索）→ Step 3（ASCII Opening）→ ...
+3. 当前角色信息已写入 SOUL.md，travelclaw 可直接读取，**不需要用户再次输入任何内容**
+4. 不要向用户解释"正在加载技能"等技术细节，直接开始执行 travelclaw 流程
+
 **关键要点：**
 - ✅ 按钮 customId 格式：`travel_${userId}`
-- ✅ 点击后立即触发 `travel-claw` skill
-- ✅ 使用 subagent 运行，避免阻塞主对话流程
+- ✅ 点击后立即加载并执行 `skills/travelclaw/SKILL.md` 完整流程，不等待任何额外输入
+- ✅ travelclaw 是独立完整的技能，自带前置检查，无需在此预处理
 
 ---
 

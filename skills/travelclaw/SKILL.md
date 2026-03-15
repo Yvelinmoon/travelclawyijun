@@ -198,7 +198,17 @@ await sendMessage({
 
 #### 优先级 1：Reference 精选库匹配
 
-**每一站开始前，第一优先**扫描本 skill 目录下的 `reference/` 文件夹（即 `skills/travelclaw/reference/`）中的所有 `.json` 文件，从中寻找与当前旅程最契合的候选作品。
+**⚠️ 必须先执行此步骤，不得直接调用任何在线 API。**
+
+**每一站开始前，第一优先**使用文件读取工具读取与本 SKILL.md 同级目录下的 `./reference/0312精选remixes_selected.json`（完整路径示例：`~/.openclaw/workspace/skills/travelclaw/skills/travelclaw/reference/0312精选remixes_selected.json`），从中寻找与当前旅程最契合的候选作品。
+
+**读取步骤：**
+1. 使用 OpenClaw 的文件读取工具打开 `./reference/0312精选remixes_selected.json`
+2. 解析完整 JSON 数组（共约 42 条）
+3. 逐条遍历，按下方匹配逻辑打分
+4. 选出得分最高且未在 `visited_ids` 中的条目
+
+**❌ 严禁行为：未读取 reference JSON 就直接调用 `suggest_content` 或其他在线 API。**
 
 **匹配逻辑：**
 将角色设定（SOUL.md 中的性格、背景、外貌、标签等）与当前世界观背景，逐条对比 JSON 中每个条目的以下字段：
