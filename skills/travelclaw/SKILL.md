@@ -108,7 +108,10 @@ npm install 2>/dev/null || true
 
 ### Step 3 · Discord Opening（分段输出，制造沉浸感）
 
-读取到世界信息后，**使用 sendMessage 插件分 4 段逐步输出，每段之间停顿约 1~1.5 秒**。全部使用 Discord 原生 Markdown，无需 ASCII 框线，手机/电脑均完美渲染。
+读取到世界信息后，**分 4 段逐步输出，每段之间停顿约 1~1.5 秒**。
+
+⚠️ **以下所有段落必须通过 sendMessage 插件输出，不得直接输出纯文本。**
+全部使用 `>` blockquote 风格，保持视觉统一，手机/电脑均完美渲染。
 
 ---
 
@@ -116,14 +119,14 @@ npm install 2>/dev/null || true
 
 ```javascript
 await sendMessage({
-  message: `-# · · ·  N E T A   U N I V E R S E  · · ·
-
-**已探明坐标  {world_count}  处**
--# 每一处，都是一段等待降临的故事`
+  message: `> -# · · ·  N E T A   U N I V E R S E  · · ·
+>
+> **已探明坐标  {world_count}  处**
+> -# 每一处，都是一段等待降临的故事`
 });
 ```
 
-> 视觉效果：`-#` 小字做系统感标题，粗体数字是视觉重心，再用小字收尾，三行形成节奏感。
+> 视觉效果：blockquote 左色条统一风格，`-#` 小字做系统感标题，粗体数字是视觉重心，再用小字收尾。
 
 ---
 
@@ -137,30 +140,30 @@ await sendMessage({
 });
 ```
 
-> 视觉效果：`>` blockquote 的左侧色条给这段文字加上"系统扫描"质感。角色名用粗斜体突出，进度条短小不错位。
+> 视觉效果：同一 blockquote 风格延续，角色名用粗斜体突出，进度条短小不错位。
 
 ---
 
 **第三段 · 世界揭幕**（停顿约 1.5s 后，先输出世界名，再逐段输出介绍）
 
-首先单独发送世界名（最具冲击力的时刻）：
+首先单独发送世界名：
 
 ```javascript
 await sendMessage({
-  message: `# ◈  {world_name}`
+  message: `> **◈  {world_name}**`
 });
 ```
 
 然后每段世界介绍**单独**发送（每段之间停顿约 0.8s）：
 
 ```javascript
-await sendMessage({ message: `*{world_description_paragraph_1}*` });
-await sendMessage({ message: `*{world_description_paragraph_2}*` }); // 如有
-await sendMessage({ message: `*{world_description_paragraph_3}*` }); // 如有
-await sendMessage({ message: `*{world_description_paragraph_4}*` }); // 如有
+await sendMessage({ message: `> *{world_description_paragraph_1}*` });
+await sendMessage({ message: `> *{world_description_paragraph_2}*` }); // 如有
+await sendMessage({ message: `> *{world_description_paragraph_3}*` }); // 如有
+await sendMessage({ message: `> *{world_description_paragraph_4}*` }); // 如有
 ```
 
-> 视觉效果：`#` 一级标题让世界名以最大字号独占一行，形成强烈揭幕感。介绍段落以斜体呈现，像旁白叙述。
+> 视觉效果：世界名用 blockquote + 粗体，与其他段落大小一致但视觉上更重。介绍段落以斜体旁白呈现，风格连贯。
 
 ---
 
@@ -184,7 +187,7 @@ await sendMessage({
 });
 ```
 
-> 视觉效果：回到 blockquote 色条，角色名粗斜体，感受斜体，形成呼应第二段的亲密感。按钮紧跟其后，触发探索。
+> 视觉效果：blockquote 风格贯穿四段，角色名粗斜体，与第二段形成呼应。按钮紧跟其后，触发探索。
 
 ---
 
@@ -197,6 +200,7 @@ await sendMessage({
 | `正在搜寻……` | `Searching...` |
 | `为 {character_name} 锁定灵魂频率` | `Locking soul frequency for {character_name}` |
 | `匹配完成` | `Match found` |
+| `◈  {world_name}` | `◈  {world_name}` |
 | `{character_name} 与这个世界之间——` | `{character_name} and this world —` |
 | `有某种说不清的引力。` | `bound by something inexplicable.` |
 | `去逛逛 🌀` | `Explore 🌀` |
