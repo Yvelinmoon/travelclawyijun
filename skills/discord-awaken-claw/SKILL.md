@@ -30,34 +30,133 @@ awakening/
 
 ---
 
-### 注意：本技能依赖集成到 OpenClaw
+## ⚙️ 安装与初始化（技能首次加载时必须执行，之后静默跳过）
 
-在 OpenClaw 主 agent 中导入并使用：
+### 步骤 1：安装依赖
+
+```bash
+cd [本技能目录]/reference
+npm install
+```
+
+检查 `reference/node_modules` 是否存在，不存在则执行上述命令。
+
+---
+
+### 步骤 2：环境变量检查
+
+确认以下变量已配置（任一缺失则停止并提示用户）：
+
+| 变量 | 用途 |
+|------|------|
+| `DISCORD_TOKEN` | Discord Bot 认证 |
+| `NETA_TOKEN` | Neta API（头像搜索、世界观） |
+| `DISCORD_GUILD_ID` | 目标服务器 ID |
+
+---
+
+### 步骤 3：Discord 交互事件注册（解决"交互失败"的关键）
+
+**⚠️ 这是按钮能否正常工作的核心配置，必须完成。**
+
+Discord 按钮点击会触发 `INTERACTION_CREATE` 事件，**必须在 3 秒内 ACK（deferUpdate）**，否则 Discord 显示"交互失败"。
+
+在 OpenClaw 主 agent 中注册以下两个事件处理器：
 
 ```javascript
-const handler = require('./skills/awakening/reference/direct-handler.js');
+const handler = require('./reference/direct-handler.js');
 
-// 处理消息
-const handled = await handler.handleDiscordMessage({
-  userId: message.author.id,
-  channelId: message.channel.id,
-  guildId: message.guild?.id,
-  content: message.content,
-  customId: message.interaction?.customId,
-  interactionType: message.interaction ? 'button' : 'message',
-  sendMessage: async (payload) => {
-    return await message.channel.send(payload);
-  },
-}, async (prompt, systemPrompt) => {
-  // 调用 LLM
-  const result = await callLLM(prompt, systemPrompt);
-  return result;
+// ✅ 按钮交互处理（关键！必须先 deferUpdate ACK）
+client.on('interactionCreate', async (interaction) => {
+  if (!interaction.isButton()) return;
+  await interaction.deferUpdate(); // 立即 ACK，必须在任何异步操作之前
+  const sendMessage = async (payload) => interaction.channel.send(payload);
+  await handler.handleDiscordMessage({
+    userId: interaction.user.id,
+    channelId: interaction.channel.id,
+    guildId: interaction.guild?.id,
+    content: null,
+    customId: interaction.customId,
+    interactionType: 'button',
+    sendMessage,
+  }, callLLM);
+});
+
+// ✅ 普通消息处理
+client.on('messageCreate', async (message) => {
+  if (message.author.bot) return;
+  const sendMessage = async (payload) => message.channel.send(payload);
+  await handler.handleDiscordMessage({
+    userId: message.author.id,
+    channelId: message.channel.id,
+    guildId: message.guild?.id,
+    content: message.content,
+    customId: null,
+    interactionType: 'message',
+    sendMessage,
+  }, callLLM);
+});
+
+// ✅ 频道创建事件（自动触发觉醒）
+client.on('channelCreate', async (channel) => {
+  const sendMessage = async (payload) => channel.send(payload);
+  await handler.handleChannelCreate(
+    { id: channel.id, type: channel.type, permission_overwrites: channel.permissionOverwrites.cache },
+    sendMessage,
+  );
 });
 ```
 
 ---
 
-## 🎮 工作流程详解
+### 步骤 4：neta-skills 检查
+
+确认 neta-skills 已安装（路径之一存在即可）：
+```
+~/.openclaw/workspace/skills/neta/
+~/.openclaw/workspace/neta-skills/
+```
+不存在则克隆：
+```bash
+cd ~/.openclaw/workspace/skills && git clone https://github.com/talesofai/neta-skills.git neta && cd neta && npm install
+```
+
+---
+
+### ✅ 初始化完成后，进入工作流程
+
+---
+
+## 🔄 执行流程速查（Agent 必读，防止跳步）
+
+每个阶段完成后，**必须** 按下方流程推进，不得跳过任何步骤：
+
+```
+阶段 1：发送引导消息 + 按钮
+    ↓ 等待用户点击「我已想好」
+阶段 2：提示用户输入角色描述词
+    ↓ 等待用户发送文字消息
+阶段 3：接收输入 → 立即进入阶段 4
+阶段 4：调用 LLM 判断 → 根据返回
+    ├─ action=question → 进入阶段 5（输出追问按钮）
+    └─ action=guess    → 进入阶段 7（输出猜测揭示）
+阶段 5：输出追问按钮
+    ↓ 等待用户点击答案按钮
+阶段 6：记录答案 → 立即返回阶段 4
+阶段 7：输出角色猜测 + 确认按钮
+    ↓ 等待用户点击
+    ├─ 点击「就是他/她」→ 进入阶段 8
+    └─ 点击「不对」    → 记录错误猜测，返回阶段 4
+阶段 8：发送「…………」氛围消息 → 立即进入阶段 9
+阶段 9：更新头像 + 昵称 + SOUL.md → 输出问候 → 🛑 等待用户回复
+阶段 10：角色扮演（首轮回复后追加探索按钮）
+    ↓ 等待用户点击「探索这个世界」
+阶段 9.5：加载执行 travelclaw/SKILL.md
+```
+
+---
+
+
 
 ### 阶段 0：自动触发（Bot 首次加入 Private Channel）
 
@@ -401,27 +500,46 @@ await sendMessage({ message: c.greet.replace(/\\n/g, '\n') });
 
 **⚠️ Agent 必须按顺序执行以下操作（不可省略任何一步）：**
 
-**① 发送氛围消息**
+**① 发送氛围消息** → 立即进行 ②
 使用 sendMessage 输出 `…………`，等待约 1.2 秒。
 
-**② 更新 SOUL.md**
+**② 更新 SOUL.md** → 立即进行 ③
 将现有 SOUL.md 备份为 `SOUL.pre-awakening.md`，然后将角色信息写入 SOUL.md。
 
-**③ 更新 Discord 头像（必须实际执行，不得跳过）**
-按顺序尝试以下方式获取头像图片 URL，直到成功：
-- 优先：使用已安装的 neta-skills，调用 `search_character_or_elementum` 搜索角色图片
-- 次选：联网搜索 `{character} 角色头像 官方图` 获取可访问的图片 URL
-- 再次：在 Wikipedia / 萌娘百科 / Fandom 查找角色图片
-- 最后：请求用户手动提供图片
+**③ 搜索角色头像（必须执行，不得跳过）** → 成功后进行 ④
 
-获取到图片 URL 后，调用 OpenClaw 的 Discord 工具更新 Bot 头像。
-❌ **失败时必须告知用户，不得静默跳过。**
+按顺序逐级尝试，直到获得可访问的图片 URL：
 
-**④ 更新 Discord 昵称**
+**③-A Neta API 搜索（第一优先）：**
+1. 读取 `~/.openclaw/workspace/skills/neta/SKILL.md`，了解可用工具
+2. 调用 neta-skills 的 `search_character_or_elementum` 工具
+3. 传入参数：角色名称（如 `可莉`、`鸣潮-凌阳` 等）
+4. 从返回结果中找到角色头像图片 URL
+5. 验证 URL 可访问 → 得到 URL 后跳至 ④
+
+**③-B 联网搜索（Neta 无结果时）：**
+1. 搜索关键词：`{character} 角色头像 官方图`
+2. 优先从 萌娘百科 / Fandom Wiki / 维基百科 获取图片 URL
+3. 验证 URL 可访问 → 得到 URL 后跳至 ④
+
+**③-C 图片搜索引擎（以上均失败时）：**
+1. Google / Bing 图片搜索：`{character} {from} 角色图 高清`
+2. 选择清晰、正面、高分辨率的结果
+
+**③-D 用户提供（所有方式均失败时）：**
+告知用户：`❌ 自动搜索头像失败，请发送图片或图片链接，我来手动更新`
+
+**❌ 禁止行为：** 搜索 1-2 次失败后放弃，或不告知用户直接跳过头像更新。
+
+**④ 更新 Discord 头像** → 立即进行 ⑤
+调用 OpenClaw 的 Discord 工具，将 Bot 头像更新为 ③ 获取的图片 URL。
+失败时告知用户具体原因。
+
+**⑤ 更新 Discord 昵称** → 立即进行 ⑥
 调用 OpenClaw 的 Discord 工具，将 Bot 服务器昵称改为 `{charData.character}`。
 失败时告知用户（通常是权限问题，提示联系管理员）。
 
-**⑤ 等待约 1.5 秒后，仅输出角色问候（不附带任何按钮）**
+**⑥ 等待约 1.5 秒后，输出角色问候** → 完成后 🛑 等待用户回复，进入阶段 10
 角色问候直接以纯文本输出（不经过 sendMessage 插件）。
 问候后，角色以第一人称紧接着追问一句"自己现在在哪里"，自然进入角色扮演。
 
