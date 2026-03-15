@@ -384,9 +384,13 @@ await sleep(1200);
 
 全部失败：告知用户 `❌ 自动搜索头像失败，请发送图片或图片链接`，**立即进行 ⑥，不得停在这里**
 
-**⑤ 更新 Discord 头像** → 无论成功失败，立即进行 ⑥
+**⑤ 更新服务器头像（Guild Member Avatar）** → 无论成功失败，立即进行 ⑥
 
-调用 Discord 工具将 Bot 头像设为 ④ 获取的 URL。
+目标：更改 Bot 在**本服务器**的头像，即 guild member avatar，**不是全局头像（global bot avatar）**。
+
+- 调用方式：`guild.members.me.setAvatar(url)`（Discord.js）或等价接口
+- ❌ 禁止调用 `client.user.setAvatar()` 或任何修改全局头像的接口——那需要特殊权限且会影响所有服务器
+- 本操作只修改当前服务器的 Bot 成员头像，无需额外权限
 - 成功：静默，立即进行 ⑥
 - 失败：告知用户原因，立即进行 ⑥，不得停在这里
 
