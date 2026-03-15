@@ -106,72 +106,70 @@ npm install 2>/dev/null || true
 - 匹配世界的名称 → `world_name`
 - 匹配世界的核心介绍文本 → `world_description`（拆分为 2~4 段，每段聚焦一个维度：世界格局、核心规则、氛围基调、与角色的契合点）
 
-### Step 3 · ASCII Opening（分段输出）
+### Step 3 · Discord Opening（分段输出，制造沉浸感）
 
-读取到世界信息后，**使用discord code block分段逐步输出**，每段之间短暂停顿，制造沉浸感：
+读取到世界信息后，**使用 sendMessage 插件分 4 段逐步输出，每段之间停顿约 1~1.5 秒**。全部使用 Discord 原生 Markdown，无需 ASCII 框线，手机/电脑均完美渲染。
 
-**第一段 · 宇宙规模：**
-```
-╔══════════════════════════════════════════════╗
-║           N E T A   U N I V E R S E          ║
-╚══════════════════════════════════════════════╝
+---
 
-  已探明世界：{world_count} 个
-  每一个世界，都是一段等待发生的故事。
-```
-
-**第二段 · 角色匹配：**
-```
-  ────────────────────────────────────────────
-  正在为 {character_name} 扫描灵魂频率...
-  ████████████████████████  匹配完成
-  ────────────────────────────────────────────
-```
-
-**第三段 · 世界揭幕（多段展示，每段独立输出）：**
-```
-  ╔══════════════════════════════════════════╗
-  ║  目标世界：{world_name}                  ║
-  ╚══════════════════════════════════════════╝
-```
-
-随后依次输出世界介绍各段，每段单独发送：
-```
-  {world_description_paragraph_1}
-```
-```
-  {world_description_paragraph_2}
-```
-```
-  {world_description_paragraph_3}  （如有）
-```
-```
-  {world_description_paragraph_4}  （如有）
-```
-
-**第四段 · 召唤入口：**
-```
-  ════════════════════════════════════════════
-  {character_name} 与这个世界之间，有某种说不清的引力。
-  ════════════════════════════════════════════
-```
-
-> **英文模式文案替换表（触发词为英文时使用）：**
->
-> | 中文原文 | 英文替换 |
-> |----------|----------|
-> | `已探明世界：{world_count} 个` | `Worlds discovered: {world_count}` |
-> | `每一个世界，都是一段等待发生的故事。` | `Every world holds a story waiting to unfold.` |
-> | `正在为 {character_name} 扫描灵魂频率...` | `Scanning soul frequency for {character_name}...` |
-> | `匹配完成` | `Match found` |
-> | `目标世界：{world_name}` | `Destination: {world_name}` |
-> | `{character_name} 与这个世界之间，有某种说不清的引力。` | `Something draws {character_name} to this world.` |
-
-以 Discord 组件按钮呈现：
+**第一段 · 宇宙规模**（停顿 0s，首先输出）
 
 ```javascript
 await sendMessage({
-  message: '',
+  message: `-# · · ·  N E T A   U N I V E R S E  · · ·
+
+**已探明坐标  {world_count}  处**
+-# 每一处，都是一段等待降临的故事`
+});
+```
+
+> 视觉效果：`-#` 小字做系统感标题，粗体数字是视觉重心，再用小字收尾，三行形成节奏感。
+
+---
+
+**第二段 · 角色锁定**（停顿约 1.2s 后输出）
+
+```javascript
+await sendMessage({
+  message: `> *正在搜寻……*
+> *为* ***{character_name}*** *锁定灵魂频率*
+> -# ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  匹配完成`
+});
+```
+
+> 视觉效果：`>` blockquote 的左侧色条给这段文字加上"系统扫描"质感。角色名用粗斜体突出，进度条短小不错位。
+
+---
+
+**第三段 · 世界揭幕**（停顿约 1.5s 后，先输出世界名，再逐段输出介绍）
+
+首先单独发送世界名（最具冲击力的时刻）：
+
+```javascript
+await sendMessage({
+  message: `# ◈  {world_name}`
+});
+```
+
+然后每段世界介绍**单独**发送（每段之间停顿约 0.8s）：
+
+```javascript
+await sendMessage({ message: `*{world_description_paragraph_1}*` });
+await sendMessage({ message: `*{world_description_paragraph_2}*` }); // 如有
+await sendMessage({ message: `*{world_description_paragraph_3}*` }); // 如有
+await sendMessage({ message: `*{world_description_paragraph_4}*` }); // 如有
+```
+
+> 视觉效果：`#` 一级标题让世界名以最大字号独占一行，形成强烈揭幕感。介绍段落以斜体呈现，像旁白叙述。
+
+---
+
+**第四段 · 引力召唤**（停顿约 1s 后输出，附带「去逛逛」按钮）
+
+```javascript
+await sendMessage({
+  message: `> ***{character_name}*** 与这个世界之间——
+> *有某种说不清的引力。*`,
   components: {
     blocks: [{
       type: 'actions',
@@ -186,7 +184,24 @@ await sendMessage({
 });
 ```
 
-> 用户点击后，OpenClaw 收到 customId `travel_explore_${userId}`，进入探索流程。
+> 视觉效果：回到 blockquote 色条，角色名粗斜体，感受斜体，形成呼应第二段的亲密感。按钮紧跟其后，触发探索。
+
+---
+
+**英文模式（触发词为英文时替换以下文案）：**
+
+| 中文 | 英文 |
+|------|------|
+| `已探明坐标  {world_count}  处` | `{world_count} worlds mapped` |
+| `每一处，都是一段等待降临的故事` | `Every world — a story waiting to begin` |
+| `正在搜寻……` | `Searching...` |
+| `为 {character_name} 锁定灵魂频率` | `Locking soul frequency for {character_name}` |
+| `匹配完成` | `Match found` |
+| `{character_name} 与这个世界之间——` | `{character_name} and this world —` |
+| `有某种说不清的引力。` | `bound by something inexplicable.` |
+| `去逛逛 🌀` | `Explore 🌀` |
+
+
 
 ---
 
