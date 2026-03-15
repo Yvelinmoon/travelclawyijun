@@ -112,6 +112,21 @@ cd ~/.openclaw/workspace/skills && git clone https://github.com/talesofai/neta-s
 
 ---
 
+## ⛔ 全局强制规则：按钮输出
+
+**以下阶段含有按钮，必须调用 sendMessage 插件输出，任何情况下不得直接输出纯文本作为替代：**
+
+| 阶段 | 必须包含的 components |
+|------|----------------------|
+| 阶段 1 | `start_${userId}` 按钮 |
+| 阶段 5 | `answer_${userId}_${index}` + `manual_${userId}` 按钮 |
+| 阶段 7 | `confirm_yes_${userId}` + `confirm_no_${userId}` 按钮 |
+| 阶段 10 | `travel_${userId}` 按钮（首轮回复后） |
+
+**直接输出文字 ≠ 调用插件。** 直接输出文字时按钮不会出现，用户无法点击继续，流程卡死。
+
+---
+
 ## 阶段详情
 
 ### 阶段 0：自动触发（Bot 加入私有频道）
@@ -129,7 +144,7 @@ cd ~/.openclaw/workspace/skills && git clone https://github.com/talesofai/neta-s
 
 **触发：** 用户输入 `@Bot 开始觉醒`
 
-**⚠️ 必须用 sendMessage 输出带按钮的消息，禁止纯文本！**
+**收到触发后，唯一的操作是立即执行以下插件调用，不得输出任何纯文本：**
 
 ```javascript
 await sendMessage({
@@ -154,6 +169,9 @@ await sendMessage({
     reusable: true,
   },
 });
+```
+
+❌ 错误：直接输出"我……还没有形状。"等文字 → 按钮不出现，用户无法继续
 ```
 
 ---
