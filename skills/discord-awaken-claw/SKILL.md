@@ -444,9 +444,10 @@ case 'travel':
     return true;
   }
   
-  // 触发 travel-claw skill
+  // 加载并执行 travelclaw skill
   await sessions_spawn({
-    task: '用户想要探索当前所在的世界。请根据角色设定和当前上下文，引导用户了解这个世界的背景、环境、和可能的冒险。',
+    task: '用户点击了「探索这个世界」按钮。请加载并严格执行 skills/travelclaw/SKILL.md 的完整流程。当前角色信息已更新至 SOUL.md，直接从 travelclaw 的前置检查开始执行。',
+    skill: 'skills/travelclaw/SKILL.md',
     mode: 'run',
     runtime: 'subagent',
   });
@@ -799,6 +800,6 @@ MIT License
 
 ---
 
-**GitHub:** https://github.com/Yvelinmoon/discord-awaken-claw-new  
+**GitHub:** https://github.com/Yvelinmoon/travelclaw  
 **作者:** Yves  
 **更新日期:** 2026-03-11

@@ -156,8 +156,37 @@ npm install 2>/dev/null || true
   ════════════════════════════════════════════
 ```
 
-以快捷按钮呈现：
-- `去逛逛 🌀` → 发送 `@{bot_name} 去逛逛`
+> **英文模式文案替换表（触发词为英文时使用）：**
+>
+> | 中文原文 | 英文替换 |
+> |----------|----------|
+> | `已探明世界：{world_count} 个` | `Worlds discovered: {world_count}` |
+> | `每一个世界，都是一段等待发生的故事。` | `Every world holds a story waiting to unfold.` |
+> | `正在为 {character_name} 扫描灵魂频率...` | `Scanning soul frequency for {character_name}...` |
+> | `匹配完成` | `Match found` |
+> | `目标世界：{world_name}` | `Destination: {world_name}` |
+> | `{character_name} 与这个世界之间，有某种说不清的引力。` | `Something draws {character_name} to this world.` |
+
+以 Discord 组件按钮呈现：
+
+```javascript
+await sendMessage({
+  message: '',
+  components: {
+    blocks: [{
+      type: 'actions',
+      buttons: [{
+        label: '去逛逛 🌀',
+        customId: `travel_explore_${userId}`,
+        style: 'primary',
+      }],
+    }],
+    reusable: true,
+  },
+});
+```
+
+> 用户点击后，OpenClaw 收到 customId `travel_explore_${userId}`，进入探索流程。
 
 ---
 
@@ -169,7 +198,7 @@ npm install 2>/dev/null || true
 
 #### 优先级 1：Reference 精选库匹配
 
-**每一站开始前，第一优先**扫描本 skill 目录下的 `reference/` 文件夹（即 `skills/travel-claw/reference/`）中的所有 `.json` 文件，从中寻找与当前旅程最契合的候选作品。
+**每一站开始前，第一优先**扫描本 skill 目录下的 `reference/` 文件夹（即 `skills/travelclaw/reference/`）中的所有 `.json` 文件，从中寻找与当前旅程最契合的候选作品。
 
 **匹配逻辑：**
 将角色设定（SOUL.md 中的性格、背景、外貌、标签等）与当前世界观背景，逐条对比 JSON 中每个条目的以下字段：
@@ -337,16 +366,42 @@ npm install 2>/dev/null || true
   图鉴已解锁！输入「生成图鉴」封存这段冒险，或继续探索更多世界～
   ```
 
-**询问玩家下一步，以快捷回复按钮形式输出：**
+**询问玩家下一步，以 Discord 组件按钮输出（不使用 @mention 文字触发）：**
 
 未满 5 站：
-- `继续冒险 🗺️` → 发送 `@{bot_name} 继续旅行`
-- `就此别过 👋` → 发送 `@{bot_name} 结束旅行`
 
-满 5 站后（额外提供「生成图鉴」按钮）：
-- `继续冒险 🗺️` → 发送 `@{bot_name} 继续旅行`
-- `生成图鉴 📖` → 发送 `@{bot_name} 生成图鉴`
-- `就此别过 👋` → 发送 `@{bot_name} 结束旅行`
+```javascript
+await sendMessage({
+  components: {
+    blocks: [{
+      type: 'actions',
+      buttons: [
+        { label: '继续冒险 🗺️', customId: `travel_continue_${userId}`, style: 'primary' },
+        { label: '就此别过 👋',  customId: `travel_end_${userId}`,      style: 'secondary' },
+      ],
+    }],
+    reusable: true,
+  },
+});
+```
+
+满 5 站后：
+
+```javascript
+await sendMessage({
+  components: {
+    blocks: [{
+      type: 'actions',
+      buttons: [
+        { label: '继续冒险 🗺️', customId: `travel_continue_${userId}`, style: 'primary' },
+        { label: '生成图鉴 📖',  customId: `travel_atlas_${userId}`,    style: 'success' },
+        { label: '就此别过 👋',  customId: `travel_end_${userId}`,      style: 'secondary' },
+      ],
+    }],
+    reusable: true,
+  },
+});
+```
 
 ---
 
