@@ -125,6 +125,8 @@ cd ~/.openclaw/workspace/skills && git clone https://github.com/talesofai/neta-s
 
 **直接输出文字 ≠ 调用插件。** 直接输出文字时按钮不会出现，用户无法点击继续，流程卡死。
 
+**调用 sendMessage 插件后，不得再重复输出其中的 message 内容。** sendMessage 的调用本身就是对用户的完整输出，额外输出文字会导致消息重复。
+
 ---
 
 ## 阶段详情
@@ -264,6 +266,8 @@ await sendMessage({
 ```
 
 选项按钮 customId：`answer_${userId}_${index}`（index 从 0）。末尾附加「✏ 自己说」按钮 `manual_${userId}`。
+
+**sendMessage 的调用即为本阶段全部输出，调用后不得再单独输出问题文本。**
 
 ---
 
