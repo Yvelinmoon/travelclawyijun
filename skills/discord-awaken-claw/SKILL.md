@@ -316,22 +316,35 @@ await sleep(1200);
 
 将现有 SOUL.md 完整保存为同级目录的 `SOUL.pre-awakening.md`（每次覆盖），再将角色信息写入 SOUL.md。
 
-**③ 更新 Discord 昵称** → 完成后立即进行 ④
+**③ 更新频道显示名** → 完成后立即进行 ④
 
-调用 Discord 工具将 Bot 服务器昵称改为 `{charData.character}`。
+目标：更改 Bot 在本服务器**频道消息旁显示的名字**（即 guild member displayName / guild nickname），不是 global username。
+
+调用 Discord 工具将该名字改为 `{charData.character}`（纯角色名，不含任何 ID 或额外字符）。
 - 成功：静默继续
 - 失败：告知用户（通常是权限问题），仍然继续 ④
 
 **④ 搜索角色头像** → 找到 URL 后立即进行 ⑤；所有方式均失败则告知用户后直接进行 ⑥
 
-逐级尝试，不得在失败 1-2 次后放弃：
+**先判断角色类型，选择对应搜索路径，不得路径用错：**
+
+**动漫 / 游戏虚构角色**（`from` 字段含《》，或明显是游戏/动漫角色）：
 
 | 优先级 | 方式 |
 |--------|------|
 | ④-A | 读取 `~/.openclaw/workspace/skills/neta/SKILL.md`，调用 `search_character_or_elementum` |
-| ④-B | 联网搜索：`{character} 角色头像 官方图`，优先萌娘百科 / Fandom / 维基百科 |
+| ④-B | 联网搜索：`{character} 角色头像 官方图`，优先萌娘百科 / Fandom Wiki |
 | ④-C | Google / Bing 图片搜索：`{character} {from} 角色图 高清` |
-| ④-D | 告知用户：`❌ 自动搜索头像失败，请发送图片或图片链接`，然后直接进行 ⑥ |
+
+**真实人物 / 影视 / 非二次元角色**（`from` 字段不含《》，或明显是真实人物、影视角色）：
+
+| 优先级 | 方式 |
+|--------|------|
+| ④-A | 图片搜索：`{character} 官方照片 高清正面`（中文人物）或 `{character} official portrait photo`（外国人物） |
+| ④-B | 搜索百度百科页面 `{character} 百度百科`，从人物 infobox 提取图片 URL |
+| ④-C | Google / Bing 图片搜索：`{character} photo` 选清晰正面照 |
+
+所有方式均失败：告知用户 `❌ 自动搜索头像失败，请发送图片或图片链接`，然后直接进行 ⑥
 
 **⑤ 更新 Discord 头像** → 完成后立即进行 ⑥
 
