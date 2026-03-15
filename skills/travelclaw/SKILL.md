@@ -112,7 +112,9 @@ npm install 2>/dev/null || true
 读取到世界信息后，**严格按以下模板分 3 段逐步输出**。
 
 ⚠️ **全部 3 段必须通过 sendMessage 插件输出，不得直接输出纯文本。**
-⛔ **模板结构锁定：不得增删任何 Markdown 元素（`-#` / `##` / `⎯` / `*italic*`），不得在三段之外追加任何输出。**
+⛔ **模板结构锁定：每段均使用 embed 卡片，不得改用纯文本 message 字段，不得在三段之外追加任何输出。**
+
+三段统一使用 Discord embed（`embeds` 字段），视觉风格与 awaken 卡片完全一致。颜色统一为 `0x5865F2`（Discord Blurple），可按角色主题色替换为 `charData.color` 的十六进制值。
 
 ---
 
@@ -120,11 +122,10 @@ npm install 2>/dev/null || true
 
 ```javascript
 await sendMessage({
-  message: `-# 正在搜寻……
-
-*为* ***{character_name}*** *锁定灵魂频率*
-
--# ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  匹配完成`
+  embeds: [{
+    description: `*正在搜寻……*\n*为* ***{character_name}*** *锁定灵魂频率*\n\n▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  *匹配完成*`,
+    color: 0x5865F2,
+  }],
 });
 ```
 
@@ -132,20 +133,16 @@ await sendMessage({
 
 **第二段 · 世界揭幕**（停顿约 1.5s 后输出）
 
-与 awaken Phase 7 角色卡片**完全一致的结构**：`-#` 小字 → `##` 大标题 → `*italic*` 副标题 → `⎯` 分隔线 → 两段 `*italic*` 描述。
+与 awaken Phase 7 角色卡片结构对齐：`author`（小字标注）→ `title`（大标题）→ `description`（副标题 + 分隔线 + 描述）。
 
 ```javascript
 await sendMessage({
-  message: `-# · · ·  N E T A   U N I V E R S E  · · ·  已探明坐标  {world_count}  处
-
-## ◈  {world_name}
-*{world_tagline}*
-
-⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯
-
-*{world_description_para1}*
-
-*{world_description_para2}*`
+  embeds: [{
+    author: { name: `· · ·  N E T A   U N I V E R S E  · · ·  已探明坐标  {world_count}  处` },
+    title: `◈  {world_name}`,
+    description: `*{world_tagline}*\n\n⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯\n\n*{world_description_para1}*\n\n*{world_description_para2}*`,
+    color: 0x5865F2,
+  }],
 });
 ```
 
@@ -154,7 +151,7 @@ await sendMessage({
 - `{world_description_para1}`：世界格局 / 核心规则（1~2 句）
 - `{world_description_para2}`：与 {character_name} 的契合点（1~2 句）
 
-⛔ **描述严格限定为 2 段，不得少于 2 段，不得超过 2 段，不得使用小标题或列表。**
+⛔ **描述严格限定为 2 段，不得使用小标题或列表。**
 
 ---
 
@@ -162,7 +159,10 @@ await sendMessage({
 
 ```javascript
 await sendMessage({
-  message: `-# {character_name} 与这个世界之间，有某种说不清的引力。`,
+  embeds: [{
+    description: `*{character_name} 与这个世界之间——*\n*有某种说不清的引力。*`,
+    color: 0x5865F2,
+  }],
   components: {
     blocks: [{
       type: 'actions',
@@ -185,11 +185,12 @@ await sendMessage({
 
 | 字段 | 中文 | 英文 |
 |------|------|------|
-| 第一段标注 | `正在搜寻……` | `Searching...` |
-| 第一段副文 | `为 {character_name} 锁定灵魂频率` | `Locking soul frequency for {character_name}` |
-| 第一段进度 | `匹配完成` | `Match found` |
-| 第二段标注 | `已探明坐标  {world_count}  处` | `{world_count} worlds mapped` |
-| 第三段标注 | `{character_name} 与这个世界之间，有某种说不清的引力。` | `{character_name} and this world — bound by something inexplicable.` |
+| 第一段描述 | `正在搜寻……` | `Searching...` |
+| | `为 {character_name} 锁定灵魂频率` | `Locking soul frequency for {character_name}` |
+| | `匹配完成` | `Match found` |
+| 第二段 author | `已探明坐标  {world_count}  处` | `{world_count} worlds mapped` |
+| 第三段描述 | `{character_name} 与这个世界之间——` | `{character_name} and this world —` |
+| | `有某种说不清的引力。` | `bound by something inexplicable.` |
 | 按钮 | `去逛逛 🌀` | `Explore 🌀` |
 
 
