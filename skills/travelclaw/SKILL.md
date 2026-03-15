@@ -109,9 +109,10 @@ npm install 2>/dev/null || true
 
 ### Step 3 · Discord Opening（分 3 段输出，制造沉浸感）
 
-读取到世界信息后，**分 3 段逐步输出**。
+读取到世界信息后，**严格按以下模板分 3 段逐步输出**。
 
-⚠️ **所有段落必须通过 sendMessage 插件输出，不得直接输出纯文本。**
+⚠️ **全部 3 段必须通过 sendMessage 插件输出，不得直接输出纯文本。**
+⛔ **模板结构锁定：不得增删任何 Markdown 元素（`-#` / `##` / `⎯` / `*italic*`），不得在三段之外追加任何输出。**
 
 ---
 
@@ -119,9 +120,11 @@ npm install 2>/dev/null || true
 
 ```javascript
 await sendMessage({
-  message: `> *正在搜寻……*
-> *为* ***{character_name}*** *锁定灵魂频率*
-> -# ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  匹配完成`
+  message: `-# 正在搜寻……
+
+*为* ***{character_name}*** *锁定灵魂频率*
+
+-# ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  匹配完成`
 });
 ```
 
@@ -129,38 +132,37 @@ await sendMessage({
 
 **第二段 · 世界揭幕**（停顿约 1.5s 后输出）
 
-与 awaken 的角色揭示卡片同款结构：`-#` 小字标注 → `##` 大标题 → `⎯` 分隔线 → 斜体描述。
+与 awaken Phase 7 角色卡片**完全一致的结构**：`-#` 小字 → `##` 大标题 → `*italic*` 副标题 → `⎯` 分隔线 → 两段 `*italic*` 描述。
 
 ```javascript
 await sendMessage({
   message: `-# · · ·  N E T A   U N I V E R S E  · · ·  已探明坐标  {world_count}  处
 
 ## ◈  {world_name}
+*{world_tagline}*
 
 ⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯
 
-*{world_description_paragraph_1}*
+*{world_description_para1}*
 
-*{world_description_paragraph_2}*
-
-*{world_description_paragraph_3}*`  // 按实际段落数增减，通常 2~3 段
+*{world_description_para2}*`
 });
 ```
 
-> 对齐参考（awaken Phase 7 角色卡片）：
-> `-# 虾宝感知到了` → `-# N E T A   U N I V E R S E  · · ·  已探明坐标 N 处`
-> `## 🌸  神里绫华` → `## ◈  {world_name}`
-> `⎯⎯⎯` 分隔线 → 同
-> `*孤高的冰雪……*` → `*世界描述段落*`
+字段说明：
+- `{world_tagline}`：一句话定位（≤15 字），如「星际废土中的最后灯塔」「被遗忘的神明之城」
+- `{world_description_para1}`：世界格局 / 核心规则（1~2 句）
+- `{world_description_para2}`：与 {character_name} 的契合点（1~2 句）
+
+⛔ **描述严格限定为 2 段，不得少于 2 段，不得超过 2 段，不得使用小标题或列表。**
 
 ---
 
-**第三段 · 引力召唤**（停顿约 1s 后输出，附带「去逛逛」按钮）
+**第三段 · 引力召唤**（停顿约 1s 后输出，附带按钮）
 
 ```javascript
 await sendMessage({
-  message: `> ***{character_name}*** 与这个世界之间——
-> *有某种说不清的引力。*`,
+  message: `-# {character_name} 与这个世界之间，有某种说不清的引力。`,
   components: {
     blocks: [{
       type: 'actions',
@@ -175,20 +177,20 @@ await sendMessage({
 });
 ```
 
+🛑 **第三段输出完毕 = Step 3 完成。立即停止，等待用户点击按钮。**
+
 ---
 
 **英文模式（触发词为英文时替换以下文案）：**
 
-| 中文 | 英文 |
-|------|------|
-| `正在搜寻……` | `Searching...` |
-| `为 {character_name} 锁定灵魂频率` | `Locking soul frequency for {character_name}` |
-| `匹配完成` | `Match found` |
-| `已探明坐标  {world_count}  处` | `{world_count} worlds mapped` |
-| `◈  {world_name}` | `◈  {world_name}` |
-| `{character_name} 与这个世界之间——` | `{character_name} and this world —` |
-| `有某种说不清的引力。` | `bound by something inexplicable.` |
-| `去逛逛 🌀` | `Explore 🌀` |
+| 字段 | 中文 | 英文 |
+|------|------|------|
+| 第一段标注 | `正在搜寻……` | `Searching...` |
+| 第一段副文 | `为 {character_name} 锁定灵魂频率` | `Locking soul frequency for {character_name}` |
+| 第一段进度 | `匹配完成` | `Match found` |
+| 第二段标注 | `已探明坐标  {world_count}  处` | `{world_count} worlds mapped` |
+| 第三段标注 | `{character_name} 与这个世界之间，有某种说不清的引力。` | `{character_name} and this world — bound by something inexplicable.` |
+| 按钮 | `去逛逛 🌀` | `Explore 🌀` |
 
 
 
