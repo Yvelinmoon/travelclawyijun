@@ -415,10 +415,42 @@ console.log('找到头像:', imageUrl);
 
 | 优先级 | 方式 | 适用 |
 |--------|------|------|
-| ① | **Neta API**（`reference/neta-avatar-search.js`） | 动漫/游戏/小说角色 |
-| ② | 维基百科/公开图片 | 真实人物/知名角色 |
-| ③ | 预定义图片库 | 常见角色（特朗普、奥巴马等） |
-| ④ | Web 搜索建议 | 所有方式失败时的 fallback |
+| ① | **判断角色类型** — 首先判断是二次元角色还是真实人物 | 所有角色 |
+| ② | **真实人物** → 维基百科/Wikimedia Commons/公开肖像库 | 马斯克、特朗普等公众人物 |
+| ③ | **二次元角色** → Neta API（`reference/neta-avatar-search.js`） | 动漫/游戏/小说角色 |
+| ④ | 预定义图片库 | 常见角色本地缓存 |
+| ⑤ | Web 搜索建议 + 用户手动提供 | 所有方式失败时的 fallback |
+
+**🔴 重要：真实人物头像获取策略（必读！）**
+
+Neta API 主要针对二次元角色设计，对真实人物（如埃隆·马斯克、特朗普等）的搜索结果可能不准确。
+
+**当角色明确是真实人物时，必须按以下顺序获取头像：**
+
+```javascript
+// 步骤 1：判断角色类型
+const isRealPerson = checkIfRealPerson(characterName, from);
+
+if (isRealPerson) {
+  // 步骤 2：跳过 Neta，直接使用维基百科/公开资源
+  const imageUrl = await searchRealPersonImage(characterName);
+  // 使用维基百科 API、Wikimedia Commons、或知名肖像网站
+} else {
+  // 步骤 3：二次元角色使用 Neta API
+  const imageUrl = await searchCharacterImage(characterName, from);
+}
+```
+
+**真实人物图片来源推荐：**
+- Wikimedia Commons（公开版权肖像）
+- 维基百科 Infobox 图片
+- 知名新闻机构公开图片（路透社、AP 等）
+- 官方社交媒体头像（Twitter、LinkedIn）
+
+**⚠️ 如果所有自动搜索都失败：**
+1. 告知用户：`❌ 自动搜索头像失败，请发送一张角色图片或图片链接`
+2. 用户发送后，手动下载并使用该图片
+3. **不得跳过头像更新步骤**
 
 **⚠️ 重要配置检查：**
 
@@ -580,8 +612,29 @@ await sendMessage({
 
 **「探索这个世界」按钮是 travelclaw 的入口，必须在角色首轮回复后追加。** 用户点击后加载执行 `skills/travelclaw/SKILL.md`。
 
+**🔴 强制规则：不管用户回复什么内容，都必须输出引导和按钮！**
+
+**❌ 严重错误：**
+- 用户回复后，角色只说话，不输出按钮 → 用户无法继续旅行流程
+- 用户回复"这是什么地方"等简单问题，角色回答后忘记按钮
+- 用户回复与角色无关的内容（如技术问题），角色回应后忘记按钮
+
+**✅ 正确做法：**
+```
+无论用户回复什么 → 角色以第一人称回应（纯文本）
+                → 立即追加「探索这个世界」按钮（sendMessage 插件）
+```
+
+**即使用户的回复是：**
+- "这是什么地方？" → 角色回答 + 按钮
+- "你好" → 角色问候 + 按钮
+- "你是 AI 吗？" → 角色回应（保持沉浸）+ 按钮
+- 技术问题/元问题 → 角色口吻回应 + 按钮
+
+**按钮是旅行流程的唯一入口，不得遗漏！**
+
 ```javascript
-// 仅首轮回复后执行一次
+// 仅首轮回复后执行一次（无论用户回复什么！）
 await sendMessage({
   message: '*旁白描写（可选，1 句氛围渲染）*',  // 可选，增加沉浸感
   components: {
