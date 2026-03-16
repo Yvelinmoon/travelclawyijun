@@ -267,29 +267,29 @@ await sessions_spawn({
   cron: '0 10 * * *',  // 每天早上 10 点
   timezone: 'local',
   
-  // 🔴 重要：指定消息投递目标
+  // 🔴 重要：指定消息投递目标 - 使用当前触发 travelclaw 的频道
   delivery: 'system',  // 使用系统通知（确保用户能看到）
-  channel: '{channelId}',  // 触发任务的 channel（用户首次使用 travelclaw 的频道）
-  
-  // 或者使用 target 指定具体频道
-  // target: 'channel:{channelId}',
+  channel: currentChannelId,  // 当前触发 travelclaw 的频道 ID（动态获取）
   
   // 自动执行一站旅行逻辑
-  onTrigger: async () => {
+  onTrigger: async (context) => {
+    // context 包含触发时的上下文信息
+    const channelId = context?.channelId || currentChannelId;
+    
     // 1. 读取当前角色和旅行状态
     const state = await getTravelState();
     
     // 2. 如果正在旅行中，继续下一站
     if (state.isTraveling) {
-      await executeNextStation(state);
+      await executeNextStation(state, channelId);
     } 
     // 3. 如果已完成 5 站，自动触发 Opening 并走新世界第 1 站
     else if (state.worldComplete) {
-      await triggerOpeningAndFirstStation(state);
+      await triggerOpeningAndFirstStation(state, channelId);
     }
     // 4. 如果从未开始，触发 Opening
     else {
-      await triggerOpening(state);
+      await triggerOpening(state, channelId);
     }
   }
 });
@@ -302,12 +302,12 @@ await sessions_spawn({
   cron: '0 20 * * *',  // 每天晚上 20 点
   timezone: 'local',
   
-  // 🔴 重要：指定消息投递目标
+  // 🔴 重要：指定消息投递目标 - 使用当前触发 travelclaw 的频道
   delivery: 'system',  // 使用系统通知（确保用户能看到）
-  channel: '{channelId}',  // 触发任务的 channel（用户首次使用 travelclaw 的频道）
+  channel: currentChannelId,  // 当前触发 travelclaw 的频道 ID（动态获取）
   
   // 自动执行一站旅行逻辑（同上）
-  onTrigger: async () => { ... }
+  onTrigger: async (context) => { ... }
 });
 ```
 
@@ -316,29 +316,28 @@ await sessions_spawn({
 | 参数 | 值 | 说明 |
 |------|-----|------|
 | `delivery` | `'system'` | 使用系统通知投递（确保消息可见） |
-| `channel` | `'{channelId}'` | 用户首次使用 travelclaw 的频道 ID（保存后复用） |
+| `channel` | `currentChannelId` | **当前触发 travelclaw 的频道 ID**（每次触发时动态获取） |
 | `target` | `'channel:{channelId}'` | 或者使用 target 明确指定频道 |
 
-**Channel 保存逻辑：**
+**Channel 动态获取逻辑：**
 ```javascript
-// 首次触发 travelclaw 时，保存 channel ID
-if (!state.channelId) {
-  state.channelId = currentChannelId;
-  await saveTravelState(state);
-}
+// 每次触发 travelclaw 时，使用当前的 channelId
+const currentChannelId = message?.channelId || interaction?.channelId;
 
-// cron 任务使用保存的 channel ID
-channel: state.channelId
+// cron 任务使用当前 channelId（不是首次触发的）
+channel: currentChannelId
 ```
 
-**为什么需要指定 channel？**
-- 避免消息发送到错误的频道（如私聊、其他群组）
-- 确保用户在触发旅行的同一个频道收到提醒
-- 避免 cron 任务在后台运行但用户看不到输出
+**为什么使用当前频道而不是首次频道？**
+- ✅ 用户可能在不同频道使用 travelclaw（如从 #旅行 切换到 #闲聊）
+- ✅ 每次触发都应该发送到**用户当前所在的频道**
+- ✅ 避免消息发送到用户已经离开的旧频道
+- ✅ 确保用户在正确的频道收到提醒和旅行内容
 
-**如果用户切换频道：**
-- 用户说"在这里旅行" → 更新 `state.channelId` 为新频道
-- 用户说"取消自动旅行" → 删除 cron 任务
+**如果用户在多个频道使用：**
+- 每个频道独立维护旅行状态（state per channel）
+- cron 任务发送到对应的频道
+- 用户说"取消自动旅行" → 仅取消当前频道的 cron 任务
 
 **检查方法：**
 - 调用 `sessions_list` 或 `subagents list` 检查是否存在 label 为 `daily_travel_auto_*` 的任务
