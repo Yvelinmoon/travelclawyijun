@@ -19,6 +19,7 @@ description: 在龙虾宝宝获取身份的awakening流程完成后（或heartbe
 - 固定触发：awakening 流程完成后，用户点击「探索这个世界」按钮时直接触发。
 - 自动触发：根据 openclaw 的 heartbeat 指令触发定时任务。
 - 手动触发：当用户在对话中提及"去逛逛""去旅行""去玩玩""去探索"一类指令时触发。
+- **每日提醒**：用户点击每日 cron 提醒的「开始今天的旅行」按钮时触发。
 - **世界穿越**：当用户说"换个世界""穿越世界""去另一个世界"等指令时，触发世界切换流程（见下方「世界穿越规则」）。
 
 **前置条件：** 已有 SOUL.md（含角色名 + 形象图片字段）；已配置 neta-skills。
@@ -153,6 +154,88 @@ AI（Opening 输出）：
 ## 前置检查（静默执行）
 
 **在任何输出之前**，静默完成以下检查，无需告知用户技术细节。
+
+### 🔴 检查并设置 Cron 定时任务（首次使用必做！）
+
+**目标：** 设置每天早 8 点（当地时区）的定时提醒，让角色主动询问用户是否开始今天的旅程。
+
+**检查逻辑：**
+```javascript
+// 1. 检查是否已有旅行 cron 任务
+const existingCron = await checkExistingCron('daily_travel_reminder');
+
+if (!existingCron) {
+  // 2. 设置 cron 任务（仅首次）
+  await setupDailyTravelCron();
+  console.log('✅ 已设置每日旅行提醒 cron 任务');
+} else {
+  console.log('ℹ️ 每日旅行提醒 cron 任务已存在，跳过设置');
+}
+```
+
+**Cron 配置详情：**
+
+| 字段 | 值 | 说明 |
+|------|-----|------|
+| **时间** | `0 8 * * *` | 每天早上 8:00（当地时区） |
+| **任务** | 发送提醒消息 + 按钮 | 角色主动询问是否开始旅程 |
+| **触发** | 点击按钮 → 触发 travelclaw | 用户点击后重新进入旅行流程 |
+| **频率** | 仅设置一次 | 已有 cron 任务时跳过 |
+
+**提醒消息模板（角色第一人称）：**
+```
+早上好！我是{character_name}。
+
+新的一天开始了——
+要一起去探索这个世界吗？
+
+[开始今天的旅行 🌅 按钮]
+```
+
+**按钮配置：**
+- Label: `开始今天的旅行 🌅`
+- customId: `daily_travel_${userId}`
+- 点击后：触发 travelclaw 主流程（从 Step 2 开始）
+
+**实现方式（OpenClaw sessions_spawn）：**
+```javascript
+// 设置 cron 任务
+await sessions_spawn({
+  task: '发送每日旅行提醒',
+  label: 'daily_travel_reminder',
+  mode: 'session',
+  cron: '0 8 * * *',  // 每天早上 8 点
+  timezone: 'local',   // 当地时区
+  message: `
+    早上好！我是${character_name}。
+    
+    新的一天开始了——
+    要一起去探索这个世界吗？
+  `,
+  components: {
+    blocks: [{
+      type: 'actions',
+      buttons: [{
+        label: '开始今天的旅行 🌅',
+        customId: `daily_travel_${userId}`,
+        style: 'primary',
+      }],
+    }],
+    reusable: true,
+  },
+});
+```
+
+**检查方法：**
+- 调用 `sessions_list` 或 `subagents list` 检查是否存在 label 为 `daily_travel_reminder` 的任务
+- 或检查 OpenClaw cron 配置文件中是否已有对应条目
+
+**⚠️ 重要：**
+- 此检查**仅在首次使用 travelclaw 时执行一次**
+- 如果已有 cron 任务，静默跳过，不告知用户
+- 如果用户主动说"取消每日提醒"，则删除 cron 任务
+
+---
 
 ### 检查 Neta Skills 是否已集成
 
