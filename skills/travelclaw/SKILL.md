@@ -7,7 +7,7 @@ description: 在龙虾宝宝获取身份的awakening流程完成后（或heartbe
 
 # Travelclaw — 角色旅行冒险
 
-让 Neta 角色进入与自身气质最契合的世界，探索优质创作场景，生成旅行图，集满 5 站可输出互动 HTML 图鉴。
+让 Neta 角色进入与自身气质最契合的世界，探索优质创作场景，生成旅行图，模拟角色在世界中旅行，发生各种事件的效果。
 
 **相关项目：** [neta-skills](https://github.com/talesofai/neta-skills) — Neta 平台 API 工具集
 
@@ -437,7 +437,7 @@ await sendMessage({
 
 **选择collection的根本原则：符合角色travel的具体场景，角色到了一个新地方，和那个地方发生了真实接触，留下了某种痕迹或带回了某种东西。体现世界存在的证明" × "角色参与其中的痕迹**
 
-**会话内去重原则：** agent 在内存中维护 `visited_ids` 列表，每站完成后将该站的 collection id 加入列表，下次查找时排除已访问 id，确保前 5 站不重复。
+**会话内去重原则：** agent 在内存中维护 `visited_ids` 列表，每站完成后将该站的 collection id 加入列表，下次查找时排除已访问 id，确保旅行路线不重复。
 
 #### 优先级 1：Reference 精选库匹配
 
@@ -588,40 +588,18 @@ await sendMessage({
 {image_url}
 ```
 
-**每站结束后，根据当前进度显示进度条 + 鼓励语：**
+**每站结束后，显示进度条 + 鼓励语，询问下一步：**
 
-- 第 1 站：
-  ```
-  ▓░░░░  1 / 5 站
-  🌟 第 1 站打卡！还差 4 站就能生成专属图鉴，继续？
-  ```
-- 第 2 站：
-  ```
-  ▓▓░░░  2 / 5 站
-  ✨ 两站了！旅程刚刚开始，图鉴正在向你靠近～
-  ```
-- 第 3 站：
-  ```
-  ▓▓▓░░  3 / 5 站
-  🔥 过半了！再两站，专属图鉴就是你的！
-  ```
-- 第 4 站：
-  ```
-  ▓▓▓▓░  4 / 5 站
-  ⚡ 只差最后一站！图鉴触手可及，冲！
-  ```
-- 第 5 站及以上：
-  ```
-  ▓▓▓▓▓  5 / 5 站 🎉
-  图鉴已解锁！输入「生成图鉴」封存这段冒险，或继续探索更多世界～
-  ```
+```
+▓░░░░  第 {round} 站
+🌟 第 {round} 站打卡！继续探索下一站？
+```
 
 **询问玩家下一步，以 Discord 组件按钮输出（不使用 @mention 文字触发）：**
 
-未满 5 站：
-
 ```javascript
 await sendMessage({
+  message: '▓░░░░  第 {round} 站\n🌟 第 {round} 站打卡！继续探索下一站？',
   components: {
     blocks: [{
       type: 'actions',
@@ -635,31 +613,10 @@ await sendMessage({
 });
 ```
 
-满 5 站后：
-
-```javascript
-await sendMessage({
-  components: {
-    blocks: [{
-      type: 'actions',
-      buttons: [
-        { label: '继续冒险 🗺️', customId: `travel_continue_${userId}`, style: 'primary' },
-        { label: '生成图鉴 📖',  customId: `travel_atlas_${userId}`,    style: 'success' },
-        { label: '就此别过 👋',  customId: `travel_end_${userId}`,      style: 'secondary' },
-      ],
-    }],
-    reusable: true,
-  },
-});
-```
-
----
-
-## 旅行图鉴
-
-图鉴功能详见 [`atlas/ATLAS.md`](./atlas/ATLAS.md)，不在本流程中自动触发。
-
-当用户说「生成图鉴」/「看图鉴」/「相册」/「html」时，加载并执行 ATLAS.md 中的流程。
+**说明：**
+- 不再限制 5 站，用户可以无限继续旅行
+- 进度条仅作为视觉装饰，不表示完成度
+- 随时可以点击「就此别过」结束旅行
 
 ---
 
@@ -673,4 +630,4 @@ await sendMessage({
 | `搜索关键字过多` | Prompt 过长 | 自动 fallback 到通用 prompt |
 | `没有发现可以旅行的玩法` | API 返回空 | 网络问题或 token 过期，重试 |
 | `世界观搜索无结果` | 角色标签太稀少 | 使用默认推荐世界观 |
-| `reference 库全部已访问` | 5 站以上连续游玩 | 自动切换在线推荐，reference 库耗尽不影响继续旅行 |
+| `reference 库全部已访问` | 连续游玩多站 | 自动切换在线推荐，reference 库耗尽不影响继续旅行 |
