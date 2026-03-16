@@ -82,6 +82,7 @@ client.on('channelCreate', async (channel) => {
 cd ~/.openclaw/workspace/skills && git clone https://github.com/talesofai/neta-skills.git neta && cd neta && npm install
 ```
 
+
 ---
 
 ## 🔄 执行流程速查（每步完成后必须按此推进，不得跳过）
@@ -154,21 +155,20 @@ cd ~/.openclaw/workspace/skills && git clone https://github.com/talesofai/neta-s
 
 ## 阶段详情
 
-### 阶段 0：自动触发（Bot 加入私有频道）
-
-**触发条件：** `CHANNEL_CREATE` 事件，同时满足：
-- `type === 0`（GUILD_TEXT）或 `5`（GUILD_ANNOUNCEMENT）
-- `permission_overwrites.length > 0`（私有频道）
-- 该频道未触发过（`hasSeenChannel(channelId)` 检查 `state.json._seenChannels`，首次后立即写入）
-
-使用 `start_channel_${channelId}` 作为按钮 customId；用户点击后以点击者 userId 创建游戏。不对 Category / Voice 频道触发。
-
----
 
 ### 阶段 1：初始引导
 
-**触发：** 用户输入 `@Bot 开始觉醒`
+**触发：** 用户输入如 `@Bot 开始觉醒` 指令
 
+## 首先进行语言判断
+**再输出任何文本之前，根据用户触发时使用的文字判断偏好语言**
+- 触发词为中文 → 全程中文
+- 触发词为英文 → 全程英文
+- 其他语言 → 跟随用户语言
+
+**此后所有输出（包括固定模板文案）均使用该语言**，直到用户明确说"切换语言"/"switch language"等才更换。
+
+## 其次输出固定形式的开场模板discord组件
 **收到触发后，唯一的操作是立即执行以下插件调用，不得输出任何纯文本：**
 
 ```javascript
