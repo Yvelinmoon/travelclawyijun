@@ -279,7 +279,7 @@ channel: currentChannelId
 ### Step 2 · 搜索匹配世界观
 
 **基于 Step 1 读取的角色设定，使用 neta skill 中的**世界观搜索**能力，找到与角色气质、背景、标签最契合的世界观。**
-**必须搜索neta中真实存在的世界观标签。**
+**必须搜索neta中真实存在的世界观标签，不得简化/省略这个真实搜索的步骤。**
 **搜索世界观只能按照角色设定+标签匹配的方式进行搜索，不得受到其他上下文因素的影响。**
 
 提取：
@@ -300,7 +300,7 @@ channel: currentChannelId
 
 ```javascript
 await sendMessage({
-  message: `# · · ·  N E T A   U N I V E R S E  · · ·
+  message: `#   N E T A   U N I V E R S E   
 
 ## 【坐标探明】
 **已探明坐标** \`${world_count} 处\`  |  **世界标签** \`${world_name}\`
