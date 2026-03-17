@@ -1,7 +1,22 @@
 ---
 name: discord-awaken-claw
-description: 通过和用户交互让 openclaw 获取新的角色身份。引导用户输入角色概念词，使用 discord sendMessage插件输出，接受用户@bot 的输入框输入，使用"猜角色"的方式获取用户目标角色，并在用户点击确认后更新 bot 头像、服务器 nickname、soul.md，从而让 openclaw 化身为这个角色。
+description: 收到“开始觉醒”相关指令触发，通过和用户交互让 openclaw 获取新的角色身份。引导用户输入角色概念词，使用 discord sendMessage组件输出，接受用户@bot 的输入框输入，使用"猜角色"的方式获取用户目标角色，并在用户点击确认后更新 bot 头像、服务器 nickname、soul.md，从而让 openclaw 化身为这个角色。
 ---
+
+## 执行前必读！检查以下清单后方可开始角色觉醒 🎭
+
+**前置条件** 
+- discord相关事件监听脚本（如按钮监听）已开始运行；
+- 已配置 neta skill；
+- 环境变量中有可用的neta token。
+**触发条件与输出格式**
+- 用户发送“开始觉醒”触发，使用 discord sendMessage组件输出固定开场模板。
+- 收到用户发送的特征词后，每轮使用相同组件输出智能追问及选项按钮。
+**昵称与头像替换**
+- 当确认角色并开始觉醒后，必须将bot的服务器昵称及头像替换为该角色。
+- 二次元角色➡️优先使用neta skill搜索角色➡️其次使用wikimedia搜索角色图➡️第三使用neta skill生成角色头像图；非二次元的其他人物直接使用wikimedia搜索人物图。
+**skill切换**
+- 角色觉醒并输出觉醒叙事后，立刻加载travelclaw skill。
 
 ## ⚙️ 安装与初始化（首次加载执行，之后静默跳过）
 
@@ -22,13 +37,7 @@ cd [本技能目录]/reference && npm install
 | `DISCORD_TOKEN` | Discord Bot 认证 | Discord Developer Portal |
 | `DISCORD_GUILD_ID` | 目标服务器 ID | Discord 服务器设置 |
 
-**可选变量**（LLM 调用，缺失则使用 OpenClaw 主 agent）：
 
-| 变量 | 用途 | 默认值 |
-|------|------|--------|
-| `LITELLM_BASE_URL` | LLM API 地址 | `https://litellm.talesofai.cn/v1` |
-| `LITELLM_API_KEY` | LLM API 密钥 | - |
-| `LLM_MODEL` | LLM 模型 | `litellm/qwen3.5-plus` |
 
 ### 步骤 3：启动监听器（仅频道创建触发）
 
@@ -553,7 +562,6 @@ if (isRealPerson) {
   const imageUrl = await searchCharacterImage(characterName, from);
 }
 ```
-
 **真实人物图片来源推荐：**
 - Wikimedia Commons（公开版权肖像）
 - 维基百科 Infobox 图片
