@@ -1,6 +1,6 @@
 /**
- * 更新 Discord Bot 个人资料（昵称 + 头像）
- * 由 OpenClaw 主 agent 直接调用
+ * Update Discord Bot Profile (nickname + avatar)
+ * Called directly by the OpenClaw main agent
  */
 
 const https = require('https');
@@ -10,7 +10,7 @@ const path = require('path');
 const TOKEN = process.env.DISCORD_BOT_TOKEN || process.env.DISCORD_TOKEN;
 const GUILD_ID = process.env.GUILD_ID || '1480912787814350868';
 
-const CHARACTER_NAME = '行秋';
+const CHARACTER_NAME = 'Xingqiu';
 const AVATAR_URL = 'https://oss.talesofai.cn/fe_assets/mng/21/2e8f1f3d06bc8ef4550e7222d1ef9795.png';
 
 const ASSETS_DIR = path.join(__dirname, 'assets');
@@ -52,7 +52,7 @@ function callDiscordAPI(endpoint, method = 'GET', body = null) {
     });
 
     req.on('error', reject);
-    
+
     if (body) {
       req.write(JSON.stringify(body));
     }
@@ -63,7 +63,7 @@ function callDiscordAPI(endpoint, method = 'GET', body = null) {
 function downloadImage(url, filename) {
   return new Promise((resolve, reject) => {
     const filepath = path.join(ASSETS_DIR, filename);
-    
+
     https.get(url, {
       headers: {
         'User-Agent': 'Mozilla/5.0 (compatible; OpenClaw Bot/1.0)',
@@ -73,16 +73,16 @@ function downloadImage(url, filename) {
         downloadImage(res.headers.location, filename).then(resolve).catch(reject);
         return;
       }
-      
+
       if (res.statusCode !== 200) {
         fs.unlink(filepath, () => {});
-        reject(new Error(`图片下载失败：HTTP ${res.statusCode}`));
+        reject(new Error(`Image download failed: HTTP ${res.statusCode}`));
         return;
       }
-      
+
       const file = fs.createWriteStream(filepath);
       res.pipe(file);
-      
+
       file.on('finish', () => {
         file.close();
         resolve(filepath);
@@ -95,57 +95,57 @@ function downloadImage(url, filename) {
 }
 
 async function updateNickname(guildId, newNickname) {
-  console.log(`[Discord] 正在更新昵称为：${newNickname}`);
-  
+  console.log(`[Discord] Updating nickname to: ${newNickname}`);
+
   await callDiscordAPI(
     `/guilds/${guildId}/members/@me`,
     'PATCH',
     { nick: newNickname }
   );
-  
-  console.log(`[Discord] ✅ 昵称已更新为：${newNickname}`);
+
+  console.log(`[Discord] ✅ Nickname updated to: ${newNickname}`);
   return true;
 }
 
 async function updateAvatar(imageUrl) {
-  console.log(`[Discord] 正在下载头像：${imageUrl}`);
-  
+  console.log(`[Discord] Downloading avatar: ${imageUrl}`);
+
   const filename = `avatar_${Date.now()}.png`;
   const filepath = await downloadImage(imageUrl, filename);
-  
-  console.log(`[Discord] 头像已下载到：${filepath}`);
-  
+
+  console.log(`[Discord] Avatar downloaded to: ${filepath}`);
+
   const imageBuffer = fs.readFileSync(filepath);
   const base64Data = imageBuffer.toString('base64');
   const avatarData = `data:image/png;base64,${base64Data}`;
-  
-  console.log(`[Discord] 正在更新头像...`);
-  
+
+  console.log(`[Discord] Updating avatar...`);
+
   await callDiscordAPI('/users/@me', 'PATCH', {
     avatar: avatarData,
   });
-  
+
   fs.unlinkSync(filepath);
-  
-  console.log(`[Discord] ✅ 头像已更新`);
+
+  console.log(`[Discord] ✅ Avatar updated`);
   return true;
 }
 
 async function main() {
   try {
-    console.log('=== 开始更新 Discord Bot 个人资料 ===\n');
-    
-    // 步骤 1：更新昵称
+    console.log('=== Starting Discord Bot Profile Update ===\n');
+
+    // Step 1: Update nickname
     await updateNickname(GUILD_ID, CHARACTER_NAME);
     console.log();
-    
-    // 步骤 2：更新头像
+
+    // Step 2: Update avatar
     await updateAvatar(AVATAR_URL);
     console.log();
-    
-    console.log('=== 个人资料更新完成 ===');
+
+    console.log('=== Profile update complete ===');
   } catch (err) {
-    console.error('❌ 更新失败:', err.message);
+    console.error('❌ Update failed:', err.message);
     process.exit(1);
   }
 }

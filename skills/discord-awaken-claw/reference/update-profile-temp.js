@@ -1,42 +1,42 @@
 const { updateNickname, updateAvatar, searchCharacterImage } = require('./discord-profile.js');
 
 const GUILD_ID = process.env.DISCORD_GUILD_ID || '1480912787814350868';
-const CHARACTER_NAME = '阿尔托莉雅·潘德拉贡';
+const CHARACTER_NAME = 'Artoria Pendragon';
 const FROM = '《Fate/stay night》';
 
 async function main() {
-  console.log('开始更新 Discord 个人资料...');
-  
+  console.log('Starting Discord profile update...');
+
   try {
-    // 1. 更新昵称
-    console.log('正在更新昵称...');
+    // 1. Update nickname
+    console.log('Updating nickname...');
     await updateNickname(GUILD_ID, CHARACTER_NAME);
-    console.log('✅ 昵称已更新为：' + CHARACTER_NAME);
+    console.log('✅ Nickname updated to: ' + CHARACTER_NAME);
   } catch (err) {
-    console.error('❌ 昵称更新失败:', err.message);
+    console.error('❌ Nickname update failed:', err.message);
   }
-  
+
   try {
-    // 2. 搜索头像
-    console.log('正在搜索角色头像...');
+    // 2. Search for avatar
+    console.log('Searching for character avatar...');
     const imageUrl = await searchCharacterImage(CHARACTER_NAME, FROM);
-    
+
     if (imageUrl) {
-      console.log('找到头像 URL:', imageUrl);
-      
-      // 3. 更新头像
-      console.log('正在更新头像...');
+      console.log('Found avatar URL:', imageUrl);
+
+      // 3. Update avatar
+      console.log('Updating avatar...');
       await updateAvatar(imageUrl);
-      console.log('✅ 头像已更新');
-      
-      // 输出 URL 供后续使用
+      console.log('✅ Avatar updated');
+
+      // Output URL for subsequent use
       console.log('IMAGE_URL:' + imageUrl);
     } else {
-      console.log('❌ 未找到角色头像');
+      console.log('❌ Character avatar not found');
       console.log('IMAGE_URL:null');
     }
   } catch (err) {
-    console.error('❌ 头像更新失败:', err.message);
+    console.error('❌ Avatar update failed:', err.message);
     console.log('IMAGE_URL:error:' + err.message);
   }
 }

@@ -1,32 +1,32 @@
 const fetch = require('node-fetch');
 
 async function callLLM() {
-  const prompt = `用户心中想着一个虚构角色。已知线索：
-- 用户给出的词/描述：秦时明月
-- 已回答问题：[]
-- 已排除的角色：[]
+  const prompt = `The user is thinking of a fictional character. Known clues:
+- Word/description given by user: Qin's Moon
+- Questions already answered: []
+- Characters already ruled out: []
 
-请判断你的确信程度：
+Assess your confidence level:
 
-A) 如果有 85% 以上的把握，直接猜测：
+A) If more than 85% confident, guess directly:
 {
   "action": "guess",
-  "character": "角色中文名",
-  "from": "《作品名》",
-  "emoji": "单个 emoji",
-  "color": "#十六进制主题色",
-  "desc": "一句话特质（≤20 字）",
-  "greet": "角色第一句话（可用\\n 换行）"
+  "character": "character full name",
+  "from": "《work title》",
+  "emoji": "single emoji",
+  "color": "#hex theme color",
+  "desc": "one-line trait (≤20 chars)",
+  "greet": "character's first line (may use \\n for line break)"
 }
 
-B) 如果还不够确定，生成追问：
+B) If not confident enough, generate a follow-up question:
 {
   "action": "question",
-  "question": "追问（1 句，具体可见的特征）",
-  "options": ["特征 1", "特征 2", "特征 3"]
+  "question": "follow-up question (1 sentence, specific observable trait)",
+  "options": ["trait 1", "trait 2", "trait 3"]
 }
 
-只输出 JSON，不要其他文字。`;
+Output JSON only, no other text.`;
 
   const response = await fetch('https://litellm.talesofai.cn/v1/chat/completions', {
     method: 'POST',
@@ -37,19 +37,19 @@ B) 如果还不够确定，生成追问：
     body: JSON.stringify({
       model: 'litellm/qwen3.5-plus',
       messages: [
-        { role: 'system', content: '你是一个"龙虾宝宝"，正在等待破壳成为用户心中的角色。用户心中想着一个著名虚构角色，你通过追问逐步识别它。所有输出必须是严格的 JSON，不包含任何其他文字。' },
+        { role: 'system', content: 'You are a "Lobster Baby", waiting to hatch into the character the user has in mind. The user is thinking of a famous fictional character; you identify it through follow-up questions. All output must be strict JSON with no other text.' },
         { role: 'user', content: prompt },
       ],
       temperature: 0.7,
       max_tokens: 500,
     }),
   });
-  
+
   if (!response.ok) {
     const error = await response.text();
-    throw new Error(`LLM API 错误：${response.status} ${error}`);
+    throw new Error(`LLM API error: ${response.status} ${error}`);
   }
-  
+
   const data = await response.json();
   console.log(data.choices[0].message.content);
 }

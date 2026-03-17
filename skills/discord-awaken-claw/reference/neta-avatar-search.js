@@ -1,16 +1,16 @@
 /**
- * Neta API 角色头像搜索 - 增强版
- * 
- * 使用 Neta API 搜索角色并获取官方头像
- * 支持灵活关键词策略和图片 URL 验证
+ * Neta API Character Avatar Search - Enhanced Version
+ *
+ * Uses the Neta API to search for characters and retrieve official avatars
+ * Supports flexible keyword strategies and image URL validation
  */
 
 const { exec } = require('child_process');
 const https = require('https');
 
 /**
- * 验证图片 URL 是否可访问
- * @param {string} url - 图片 URL
+ * Validate whether an image URL is accessible
+ * @param {string} url - Image URL
  * @returns {Promise<boolean>}
  */
 async function isValidImageUrl(url) {
@@ -19,16 +19,16 @@ async function isValidImageUrl(url) {
       resolve(false);
       return;
     }
-    
+
     const req = https.get(url, { timeout: 5000 }, res => {
       if (res.statusCode === 302 || res.statusCode === 301) {
-        // 重定向，跟随
+        // Redirect — follow it
         isValidImageUrl(res.headers.location).then(resolve);
         return;
       }
       resolve(res.statusCode === 200);
     });
-    
+
     req.on('error', () => resolve(false));
     req.on('timeout', () => {
       req.destroy();
@@ -38,33 +38,33 @@ async function isValidImageUrl(url) {
 }
 
 /**
- * 执行 Neta 搜索命令
- * @param {string} keywords - 搜索关键词
+ * Execute a Neta search command
+ * @param {string} keywords - Search keywords
  * @returns {Promise<Array>}
  */
 function runNetaSearch(keywords) {
   return new Promise((resolve, reject) => {
     const command = `cd ~/.openclaw/workspace/skills/neta/skills/neta && NETA_TOKEN="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MzI0MTE4MywidXVpZCI6IjY2NzdjOTFhMDRmODRhMDM5Mzk4Y2Q3NDYyZjk0YTlmIiwicGhvbmVfbnVtIjoiMTg3MjE5NTc2OTYiLCJleHBpcmVzX2F0IjoxODA0ODE5MDk3LCJpc19yZWdpc3RlciI6ZmFsc2UsInVzZXJfYWdlbnQiOiJNb3ppbGxhLzUuMCAoTWFjaW50b3NoOyBJbnRlbCBNYWMgT1MgWCAxMF8xNV83KSBBcHBsZVdlYktpdC81MzcuMzYgKEtIVE1MLCBsaWtlIEdlY2tvKSBDaHJvbWUvMTQ1LjAuMC4wIFNhZmFyaS81MzcuMzYiLCJzYWx0IjoiNjQ2ODJkZjg2NjZiNDkzNGFiNzY5OWRlN2M2OGE0ODYifQ.kl-Gzj3VGybFxaTVLAuKaomEFEIgGDfVivyoaJfwB1k" node bin/cli.js search_character_or_elementum --keywords "${keywords}" --parent_type "character" 2>/dev/null`;
-    
+
     exec(command, { encoding: 'utf8', timeout: 10000 }, (error, stdout, stderr) => {
       if (error) {
-        reject(new Error(`Neta API 执行失败：${error.message}`));
+        reject(new Error(`Neta API execution failed: ${error.message}`));
         return;
       }
-      
+
       try {
-        // 提取 JSON 部分（pnpm 可能输出额外日志）
+        // Extract JSON part (pnpm may output extra logs)
         const jsonMatch = stdout.match(/\{[\s\S]*\}/);
         if (!jsonMatch) {
-          console.log(`[Neta] 未找到 JSON 输出，stdout: ${stdout.substring(0, 200)}`);
+          console.log(`[Neta] No JSON output found, stdout: ${stdout.substring(0, 200)}`);
           resolve([]);
           return;
         }
-        
+
         const result = JSON.parse(jsonMatch[0]);
         resolve(result.list || []);
       } catch (e) {
-        console.log(`[Neta] JSON 解析失败：${e.message}`);
+        console.log(`[Neta] JSON parse failed: ${e.message}`);
         console.log(`[Neta] stdout: ${stdout.substring(0, 500)}`);
         resolve([]);
       }
@@ -73,20 +73,20 @@ function runNetaSearch(keywords) {
 }
 
 /**
- * 获取角色详情（通过 UUID）
- * @param {string} uuid - 角色 UUID
+ * Get character details (by UUID)
+ * @param {string} uuid - Character UUID
  * @returns {Promise<Object|null>}
  */
 function getCharacterDetails(uuid) {
   return new Promise((resolve, reject) => {
     const command = `cd ~/.openclaw/workspace/skills/neta/skills/neta && NETA_TOKEN="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MzI0MTE4MywidXVpZCI6IjY2NzdjOTFhMDRmODRhMDM5Mzk4Y2Q3NDYyZjk0YTlmIiwicGhvbmVfbnVtIjoiMTg3MjE5NTc2OTYiLCJleHBpcmVzX2F0IjoxODA0ODE5MDk3LCJpc19yZWdpc3RlciI6ZmFsc2UsInVzZXJfYWdlbnQiOiJNb3ppbGxhLzUuMCAoTWFjaW50b3NoOyBJbnRlbCBNYWMgT1MgWCAxMF8xNV83KSBBcHBsZVdlYktpdC81MzcuMzYgKEtIVE1MLCBsaWtlIEdlY2tvKSBDaHJvbWUvMTQ1LjAuMC4wIFNhZmFyaS81MzcuMzYiLCJzYWx0IjoiNjQ2ODJkZjg2NjZiNDkzNGFiNzY5OWRlN2M2OGE0ODYifQ.kl-Gzj3VGybFxaTVLAuKaomEFEIgGDfVivyoaJfwB1k" node bin/cli.js request_character_or_elementum --uuid "${uuid}"`;
-    
+
     exec(command, { encoding: 'utf8', timeout: 10000 }, (error, stdout, stderr) => {
       if (error) {
-        reject(new Error(`Neta API 详情获取失败：${error.message}`));
+        reject(new Error(`Neta API detail fetch failed: ${error.message}`));
         return;
       }
-      
+
       try {
         const result = JSON.parse(stdout);
         resolve(result);
@@ -98,84 +98,84 @@ function getCharacterDetails(uuid) {
 }
 
 /**
- * 生成灵活的关键词列表
- * @param {string} characterName - 角色名称
- * @param {string} from - 作品名称
+ * Generate a flexible list of keywords
+ * @param {string} characterName - Character name
+ * @param {string} from - Work title
  * @returns {string[]}
  */
 function generateKeywordsList(characterName, from) {
   const keywordsList = [];
-  
-  // 策略 1: 原始名称
+
+  // Strategy 1: Original name
   keywordsList.push(characterName);
-  
-  // 策略 2: 去除分隔符（如"阿不思·邓布利多" → "阿不思邓布利多"）
+
+  // Strategy 2: Remove separators (e.g. "Albus·Dumbledore" → "AlbusDumbledore")
   const noSeparator = characterName.replace(/[·\s\-]/g, '');
   if (noSeparator !== characterName) {
     keywordsList.push(noSeparator);
   }
-  
-  // 策略 3: 只取名字的最后部分（如"阿不思·邓布利多" → "邓布利多"）
+
+  // Strategy 3: Use only the last part of the name (e.g. "Albus·Dumbledore" → "Dumbledore")
   const lastName = characterName.split('·').pop();
   if (lastName && lastName !== characterName) {
     keywordsList.push(lastName);
   }
-  
-  // 策略 4: 只取名字的第一部分
+
+  // Strategy 4: Use only the first part of the name
   const firstName = characterName.split('·')[0];
   if (firstName && firstName !== characterName) {
     keywordsList.push(firstName);
   }
-  
-  // 策略 5: 作品名
+
+  // Strategy 5: Work title
   const cleanFrom = from.replace(/[《》]/g, '');
   if (cleanFrom) {
     keywordsList.push(cleanFrom);
   }
-  
-  // 策略 6: 角色 + 作品组合
+
+  // Strategy 6: Character + work combination
   keywordsList.push(`${characterName} ${cleanFrom}`);
-  
-  // 策略 7: 英文名（如果有）
+
+  // Strategy 7: If name contains a separator, try last name + work
   if (characterName.includes('·')) {
-    // 可能是中文名，尝试只用姓氏
+    // May be a transliterated name; try surname only
     keywordsList.push(lastName + ' ' + cleanFrom);
   }
-  
-  // 去重
+
+  // Deduplicate
   return [...new Set(keywordsList.filter(k => k && k.trim()))];
 }
 
 /**
- * 搜索角色 - 增强版
- * 
- * 使用多种关键词策略，直到找到有效的头像
- * 
- * @param {string} characterName - 角色名称
- * @param {string} from - 作品名称
+ * Search for a character - Enhanced Version
+ *
+ * Uses multiple keyword strategies until a valid avatar is found
+ *
+ * @param {string} characterName - Character name
+ * @param {string} from - Work title
  * @returns {Promise<{name: string, avatar: string, source: string}|null>}
  */
 async function searchCharacter(characterName, from) {
   const keywordsList = generateKeywordsList(characterName, from);
-  
-  console.log(`[Neta] 开始搜索：${characterName} (${from})`);
-  console.log(`[Neta] 关键词策略：${keywordsList.join(' | ')}`);
-  
-  // 逐个尝试关键词
+
+  console.log(`[Neta] Starting search: ${characterName} (${from})`);
+  console.log(`[Neta] Keyword strategies: ${keywordsList.join(' | ')}`);
+
+  // Try each keyword in turn
   for (const keywords of keywordsList) {
     try {
-      console.log(`[Neta] 尝试关键词："${keywords}"`);
+      console.log(`[Neta] Trying keyword: "${keywords}"`);
       const results = await runNetaSearch(keywords);
-      
+
       if (results && results.length > 0) {
         const character = results[0];
         const avatarUrl = character.avatar_img || character.avatar || character.image || character.header_img;
-        
+
         if (avatarUrl) {
-          // 验证 URL 是否有效
+          // Validate URL
           const isValid = await isValidImageUrl(avatarUrl);
           if (isValid) {
-            console.log(`[Neta] ✅ 找到有效头像：${character.name || characterName}`);
+            console.log(`[Neta] ✅ Found valid avatar: ${character.name || characterName}`);
             console.log(`[Neta] 🖼️ URL: ${avatarUrl}`);
             return {
               name: character.name || characterName,
@@ -184,11 +184,11 @@ async function searchCharacter(characterName, from) {
               keywords: keywords,
             };
           } else {
-            console.log(`[Neta] ⚠️ URL 无效，继续尝试：${avatarUrl}`);
+            console.log(`[Neta] ⚠️ URL invalid, continuing: ${avatarUrl}`);
           }
         }
-        
-        // 如果有 UUID，尝试获取详情（可能包含更多图片）
+
+        // If UUID is available, try fetching details (may contain more images)
         if (character.uuid) {
           try {
             const details = await getCharacterDetails(character.uuid);
@@ -197,7 +197,7 @@ async function searchCharacter(characterName, from) {
               if (detailAvatar) {
                 const isValid = await isValidImageUrl(detailAvatar);
                 if (isValid) {
-                  console.log(`[Neta] ✅ 从详情找到有效头像：${character.name || characterName}`);
+                  console.log(`[Neta] ✅ Found valid avatar from details: ${character.name || characterName}`);
                   console.log(`[Neta] 🖼️ URL: ${detailAvatar}`);
                   return {
                     name: details.name || character.name || characterName,
@@ -209,16 +209,16 @@ async function searchCharacter(characterName, from) {
               }
             }
           } catch (e) {
-            console.log(`[Neta] 获取详情失败：${e.message}`);
+            console.log(`[Neta] Failed to fetch details: ${e.message}`);
           }
         }
       }
     } catch (err) {
-      console.log(`[Neta] 搜索失败 (${keywords}): ${err.message}`);
+      console.log(`[Neta] Search failed (${keywords}): ${err.message}`);
     }
   }
-  
-  console.log(`[Neta] ❌ 所有关键词策略都未找到有效头像`);
+
+  console.log(`[Neta] ❌ All keyword strategies failed to find a valid avatar`);
   return null;
 }
 
