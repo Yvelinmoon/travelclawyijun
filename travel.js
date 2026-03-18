@@ -4,9 +4,11 @@
  *
  * Commands:
  *   node travel.js soul [soul_path]                   → {name, picture_uuid}
+ *   node travel.js world "<keywords>"                 → {world_count, world_name, world_description, lore}
  *   node travel.js suggest [exclude_csv]              → {uuid, name, from_ref}
  *   node travel.js gen <char_name> <pic_uuid> <uuid>  → {scene, status, url, collection_uuid}
  *
+ * world: autocomplete → tags → hashtag_info (replaces neta-skills suggest_keywords/suggest_tags/get_hashtag_info)
  * suggest priority: scenes.json (local, tag-scored) → online API fallback
  * API: https://api.talesofai.cn
  * Token resolved from: NETA_TOKEN env → ~/.openclaw/workspace/.env → clawhouse .env
@@ -81,6 +83,44 @@ if (cmd === 'soul') {
 
   if (!name) throw new Error('No 名字 field found in SOUL.md. Run adopt first.');
   out({ name, picture_uuid: picUuid ?? null });
+}
+
+// ── world: autocomplete → tags → hashtag_info (replaces neta-skills Steps 2A/2B/2C) ──
+
+else if (cmd === 'world') {
+  const query = args.join(' ').trim();
+  if (!query) throw new Error('Usage: travel.js world "<char_name> <traits>"');
+
+  // Step 2A: suggest_keywords equivalent — autocomplete prefix
+  const autoRes = await api('GET',
+    `/v1/recsys/autocomplete?prefix=${encodeURIComponent(query)}&size=5`
+  ).catch(() => ({ list: [] }));
+  const bestKeyword = (autoRes.list ?? [])[0]?.keyword ?? query;
+  log(`🔍 keyword: "${bestKeyword}"`);
+
+  // Step 2B: suggest_tags equivalent — world tag list
+  const tagsRes = await api('GET',
+    `/v1/recsys/tags?keyword=${encodeURIComponent(bestKeyword)}&size=10`);
+  const tags = (tagsRes.suggestions ?? []).sort((a, b) => (b._score ?? 0) - (a._score ?? 0));
+  if (!tags.length) throw new Error(`No world tags found for: "${bestKeyword}"`);
+
+  const world_count = tags.length;
+  const topTag = tags[0].name;
+  log(`🌌 world tag: "${topTag}" (${world_count} total)`);
+
+  // Step 2C: get_hashtag_info equivalent — world detail
+  const infoRes = await api('GET',
+    `/v1/hashtag/hashtag_info/${encodeURIComponent(topTag)}`);
+  const hashtag = infoRes.hashtag ?? infoRes;
+  const world_name = hashtag.name ?? topTag;
+  const lore = hashtag.lore ?? [];
+  const world_description = lore
+    .slice(0, 3)
+    .map(l => l.description ?? '')
+    .filter(Boolean)
+    .join('\n\n');
+
+  out({ world_count, world_name, world_description, lore });
 }
 
 // ── suggest: pick a destination (local scenes.json first, API fallback) ─────
@@ -281,7 +321,7 @@ else if (cmd === 'gen') {
 
 else {
   process.stderr.write(
-    'Usage: node travel.js soul | suggest [exclude_csv] | gen <char_name> <pic_uuid> <collection_uuid>\n'
+    'Usage: node travel.js soul | world "<keywords>" | suggest [exclude_csv] | gen <char_name> <pic_uuid> <collection_uuid>\n'
   );
   process.exit(1);
 }

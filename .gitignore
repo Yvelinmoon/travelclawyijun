@@ -11,3 +11,8 @@ node_modules/
 # 备份文件
 *.bak
 *.backup
+
+# 隐藏目录
+.agents/
+.claude/
+.DS_Store
