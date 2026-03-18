@@ -520,16 +520,9 @@ if (isRealPerson) {
 
 **⚠️ Important configuration check:**
 
-Ensure the path in `reference/neta-avatar-search.js` is correct:
-```javascript
-// ✅ Correct path (OpenClaw workspace)
-const command = `cd ~/.openclaw/workspace/skills/neta/skills/neta && NETA_TOKEN="..." node bin/cli.js ...`;
+Ensure the path in `reference/neta-avatar-search.js` is correct
 
-// ❌ Incorrect path (will cause search failure)
-const command = `cd /opt/openclaw/skills/neta && pnpm start ...`;
-```
-
-> ✅ ④ found URL → **immediately execute ⑤: update server avatar**
+ > ✅ ④ found URL → **immediately execute ⑤: update server avatar**
 > ❌ ④ all paths failed → inform user `❌ Auto avatar search failed, please send an image or image link` → **immediately jump to ⑥: output awakening narrative** (skip ⑤, do not stop here)
 
 ---
