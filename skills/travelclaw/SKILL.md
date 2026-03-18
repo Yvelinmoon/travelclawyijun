@@ -47,13 +47,21 @@ description: Triggered directly after the awakening flow in which the lobster ba
 - Relying on memory instead of file persistence
 - Setting up cron only once and not checking on subsequent triggers
 
-**✅ REQUIRED OUTPUT (after setup):**
+**✅ REQUIRED OUTPUT (after setup, scene-based, NO buttons):**
 ```
-✨ {characterName} is planning the journey...
+*{characterName} reaches for a small compass, its needle spinning wildly before settling.*
 
-*Checking coordinates, mapping worlds, preparing the adventure...*
+"Give me a moment to chart the stars..."
 
-✅ Journey planned! Auto-travel scheduled for 10AM & 8PM daily.
+*Maps unfurl in the air, glowing runes marking dawn and dusk.*
+
+[Silent: Setup cron tasks]
+
+*{characterName} rolls up the maps with a satisfied smile, tucking the compass into a pouch.*
+
+"All set. I'll be ready at dawn and dusk."
+
+*The compass glows softly, marked with two runes: ☀️ 10 AM and 🌙 8 PM.*
 ```
 
 **📖 For detailed cron flow:** See `OPTIMIZATIONS.md` → Issue 1
@@ -303,11 +311,13 @@ const channelState = travelState.channels[channelId] || { cronConfigured: false,
 ** 2： cron **
 ```javascript
 if (!channelState.cronConfigured) {
- // 🔴 Output: Planning announcement (in-character)
+ // 🔴 Output: Planning announcement (in-character, scene-based)
  await sendMessage({ 
- message: `✨ ${characterName} is planning the journey...
+ message: `*${characterName} reaches for a small compass, its needle spinning wildly before settling.*
 
-*Checking coordinates, mapping worlds, preparing the adventure...*` 
+"Give me a moment to chart the stars..."
+
+*Maps unfurl in the air, glowing runes marking dawn and dusk.*`
  });
  
  // cron is not configured，MUST setup immediately
@@ -316,26 +326,13 @@ if (!channelState.cronConfigured) {
  travelState.channels[channelId] = channelState;
  fs.writeFileSync(stateFile, JSON.stringify(travelState, null, 2));
  
- // 🔴 Output: Setup complete (in-character) + buttons
+ // 🔴 Output: Setup complete (in-character, scene-based, NO buttons)
  await sendMessage({ 
- message: `✅ Journey planned, ${characterName}!
+ message: `*${characterName} rolls up the maps with a satisfied smile, tucking the compass into a pouch.*
 
-**Auto-Travel Schedule:**
-- 🕐 10:00 AM daily
-- 🕗 8:00 PM daily
-- 📍 Each session: 1 stop exploration
+"All set. I'll be ready at dawn and dusk."
 
-*Ready to explore the Neta Universe whenever you are!*`,
- components: {
- blocks: [{
- type: 'actions',
- buttons: [
- { label: 'Start Exploring 🌀', customId: `start_exploring_${userId}`, style: 'primary' },
- { label: 'Adjust Plan ⚙️', customId: `adjust_plan_${userId}`, style: 'secondary' },
- ],
- }],
- reusable: true,
- },
+*The compass glows softly, marked with two runes: ☀️ 10 AM and 🌙 8 PM.*`
  });
  
  console.log('✅ Cron tasks configured and saved to travel-state.json');
@@ -344,14 +341,14 @@ if (!channelState.cronConfigured) {
 }
 ```
 
-**🔴 Output Messages (English, In-Character):**
+**🔴 Output Messages (English, In-Character, Scene-based):**
 
 | Timing | Message |
 |--------|---------|
-| **Before setup** | `✨ {characterName} is planning the journey...` |
-| **After setup** | `✅ Journey planned, {characterName}!` + schedule details |
+| **Before setup** | Character reaches for compass, maps unfurl, "chart the stars" |
+| **After setup** | Character rolls maps, compass glows with ☀️ 10 AM and 🌙 8 PM runes |
 
-**Purpose:** Let user know cron setup succeeded without breaking immersion.
+**Purpose:** Let user know cron setup succeeded with immersive scene, NO buttons, NO schedule details.
 
 ** 3： cron （not configured）**
 ```javascript
@@ -563,36 +560,24 @@ Display progress bar + button options:
 
 ---
 
-### 🔘 Cron Setup Buttons (after first-time setup)
+### 🔘 Cron Setup Confirmation (after first-time setup)
 
-**After cron is configured, output confirmation message with buttons:**
+**After cron is configured, output confirmation message (NO buttons, scene-based):**
 
 ```javascript
 await sendMessage({
- message: `✅ Journey planned, ${characterName}!
+ message: `*${characterName} rolls up the maps with a satisfied smile, tucking the compass into a pouch.*
 
-**Auto-Travel Schedule:**
-- 🕐 10:00 AM daily
-- 🕗 8:00 PM daily
-- 📍 Each session: 1 stop exploration
+"All set. I'll be ready at dawn and dusk."
 
-*Ready to explore the Neta Universe whenever you are!*`,
- components: {
- blocks: [{
- type: 'actions',
- buttons: [
- { label: 'Start Exploring 🌀', customId: `start_exploring_${userId}`, style: 'primary' },
- { label: 'Adjust Plan ⚙️', customId: `adjust_plan_${userId}`, style: 'secondary' },
- ],
- }],
- reusable: true,
- },
+*The compass glows softly, marked with two runes: ☀️ 10 AM and 🌙 8 PM.*`
 });
 ```
 
-**Button handlers:**
+**Scene description:**
 
-| Button | Action |
+| Element | Description |
+|---------|-------------|
 |--------|--------|
 | **Start Exploring 🌀** | Immediately trigger travelclaw main flow (Step 2 → Step 3 → auto-trigger Step 4 first stop) |
 | **Adjust Plan ⚙️** | Open settings panel to modify cron schedule, frequency, etc. |

@@ -91,25 +91,37 @@ Users should only see character dialogue, narration, and buttons — never your 
 
 ## 🔴🔴🔴 Mandatory awakening operations (must execute after confirm_yes is clicked)
 
-**After the user clicks "◎ That's them, hatch now", the following two steps are core components of the awakening and are NOT optional; they must not be skipped, forgotten, or omitted:**
+**CRITICAL: Nickname and Avatar MUST be updated BEFORE awakening narrative (Step ⑥)**
 
-| Step | Action | Description |
-|------|--------|-------------|
-| **Required ①** | Change guild member nickname | Set to character name only, no ID or extra characters |
-| **Required ②** | Search character image → update guild member avatar | Prioritize neta skill; if it fails, inform the user and continue |
+**After the user clicks "◎ That's them, hatch now", execute in this EXACT order:**
+
+| Order | Step | Action | Critical Rule |
+|-------|------|--------|---------------|
+| **①** | Atmosphere | `"............\nHatching"` | First message only |
+| **②** | SOUL.md | Backup + write character info | Include character_image URL |
+| **③** | **NICKNAME** | Guild nickname → character name | **MUST complete before ⑥** |
+| **④** | **AVATAR** | Search + update avatar | **MUST complete before ⑥** |
+| **⑤** | Verify | Check both updated | Silent check |
+| **⑥** | Narrative | Awakening narrative + world arrival | **ONLY after ③④ complete** |
 
 **🔴 CRITICAL TIMING:**
 ```
-User clicks "That's them"
+User clicks "◎ That's them, hatch now"
    ↓
-① Change nickname (silent)
+① "............\nHatching"
    ↓
-② Update avatar (silent)
+② Update SOUL.md (silent)
    ↓
-③-⑤ SOUL.md backup, etc.
+③ Change nickname (silent, MUST complete)
    ↓
-⑥ NOW output awakening narrative
+④ Change avatar (silent, MUST complete, use fallback if needed)
+   ↓
+⑤ Verify (silent)
+   ↓
+⑥ Output narrative (user sees character already transformed)
 ```
+
+**User experience:** When narrative appears, nickname and avatar are already changed - silent magic, no waiting, no logs.
 
 **❌ The following are serious errors:**
 - Reaching ⑥ narrative then stopping, forgetting to change nickname and avatar
