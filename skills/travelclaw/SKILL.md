@@ -281,10 +281,12 @@ channel: currentChannelId
 
 ### Step 1 · 读取角色档案（静默，本地）
 
-从 SOUL.md 读取：
-- `名字` 字段 → `character_name`
-- `形象图片` 字段 URL → 提取路径中的 UUID → `picture_uuid`（如果有再使用）
-- 角色其他设定字段（性格、背景、标签等）→ 用于世界观匹配
+```bash
+node travel.js soul
+# → {"name": "可莉", "picture_uuid": "2b4611e7-..."}
+```
+
+存储 `character_name`、`picture_uuid`，用于后续步骤。
 
 ### Step 2 · 搜索匹配世界观（🔴 强制使用正确的命令）
 
@@ -422,42 +424,12 @@ await sendMessage({
 
 **会话内去重原则：** agent 在内存中维护 `visited_ids` 列表，每站完成后将该站的 collection id 加入列表，下次查找时排除已访问 id，确保一个世界内的 5 站旅行不重复。
 
-#### 优先级 1：Reference 精选库匹配
-
-**⚠️ 必须先执行此步骤，在精选作品中挑选collection**
-
-**每一站开始前，第一优先**使用文件读取工具读取与本 SKILL.md 同级目录下的 `./reference/0312精选remixes_selected.json`（完整路径示例：`~/.openclaw/workspace/skills/travelclaw/skills/travelclaw/reference/0312精选remixes_selected.json`），从中寻找与当前旅程最契合的候选作品。
-
-**读取步骤：**
-1. 使用 OpenClaw 的文件读取工具打开 `./reference/0312精选remixes_selected.json`
-2. 解析完整 JSON 数组（共约 42 条）
-3. 逐条遍历，按下方匹配逻辑打分
-4. 选出得分最高且未在 `visited_ids` 中的条目
-
-**❌ 严禁行为：未读取 reference JSON 就直接调用 `suggest_content` 或其他在线 API。**
-
-**匹配逻辑：**
-将角色设定（SOUL.md 中的性格、背景、外貌、标签等）与当前世界观背景，逐条对比 JSON 中每个条目的以下字段：
-- `content_tags` — 风格、氛围、角色特征、色调等描述符，权重最高
-- `tax_paths` — 分类路径，判断题材和玩法方向是否契合
-- `pgc_tags` / `highlight_tags` — 所属世界或创作者标签，与世界观匹配时加分
-- `name` — collection 名称，辅助判断场景调性
-
-**筛选规则：**
-- 排除所有已在 `visited_ids` 中的 `id`
-- 从剩余候选中选取综合匹配度最高的一条
-- 若有多条相近，优先选 `content_tags` 与角色气质重合度更高的
-
-**命中后**，使用已选条目的 `collection_uuid` 直接进入 Step 5。
-
-#### 优先级 2：在线推荐（Reference 无匹配时 fallback）
-
-若 reference 库中无合适候选（所有条目均已访问，或匹配度过低），则使用以下命令从在线推荐中发现候选 collection：
-
 ```bash
 node travel.js suggest "{visited_uuid_1},{visited_uuid_2},..."
-# → {"uuid": "abc-123", "name": "【捏捏开荒团】...", "from_ref": false}
+# → {"uuid": "abc-123", "name": "【捏捏开荒团】...", "from_ref": true}
 ```
+
+该命令自动处理：精选库优先匹配（按 SOUL.md 标签评分）→ 在线推荐 fallback。`from_ref: true` 表示来自精选库。传入已访问的 UUID（逗号分隔）确保不重复。
 
 ---
 
