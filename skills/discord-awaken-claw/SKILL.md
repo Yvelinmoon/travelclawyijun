@@ -298,7 +298,7 @@ const imageUrl = await searchCharacterImage(charData.character, charData.from);
 | ③ | Predefined image library | Hardcoded reliable URLs |
 | ④ | Web search suggestions | When all automated searches fail |
 
-****
+**When using the Neta skill, search only the basic character name. Do not use phrases or complex search strategies.**
 **For real people (Elon Musk, Trump, etc.):** Neta API may not have accurate images. The function automatically falls through to Wikipedia/Wikimedia Commons API (Priority ②), which searches for official portraits using:
 
 ```
