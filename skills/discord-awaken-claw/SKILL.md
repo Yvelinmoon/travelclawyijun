@@ -39,6 +39,7 @@ description: Triggered when an "start awakening" related command is received. Th
 - Question → call `sendMessage` with `components` (Phase 5 template)
 - Guess → call `sendMessage` with confirm/reject `components` (Phase 7 template)
 - This applies from the very first interaction after the user sends their description
+- **never output sendMessage and components format directly in a code block**
 
 ---
 
