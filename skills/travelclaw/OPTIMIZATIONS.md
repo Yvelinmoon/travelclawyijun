@@ -1,11 +1,6 @@
 # Travelclaw Optimizations
 
-_Quick reference for two critical fixes_
-
----
-# Travelclaw Optimizations
-
-_Quick reference for critical fixes_
+_Quick reference for critical fixes — travel.js edition_
 
 ---
 
@@ -20,8 +15,6 @@ _Quick reference for critical fixes_
 **Golden Rule:** "Would a user see this in a roleplay chat?"
 
 ---
-
-
 
 ## 🔴 Issue 1: Cron Tasks Forgotten
 
@@ -88,48 +81,51 @@ if (!channelState.cronConfigured) {
 
 ---
 
-## 🔴 Issue 2: Reference File Ignored
+## 🔴 Issue 2: Collection UUID Mismatch (FIXED in travel.js)
 
-**Solution:** 3 reading methods + mandatory confirmation output
+**Problem (OLD):** Manual collection ID → uuid mapping led to mismatched destinations.
 
-**File path:** `/home/node/.agents/skills/travelclaw/reference/0312 精选 remixes_selected.json`
+**Solution (NEW):** `travel.js suggest` returns correct uuid directly.
 
-**3 Methods (use any):**
-```javascript
-// Method A: OpenClaw read (recommended)
-const collections = JSON.parse(await read({ 
-  path: '/home/node/.agents/skills/travelclaw/reference/0312 精选 remixes_selected.json' 
-}));
+**travel.js handles:**
+- Local scenes.json priority with tag-based scoring
+- API fallback via `/v1/recsys/content`
+- Automatic exclusion of visited collections
+- Returns `{uuid, name, from_ref}` directly
 
-// Method B: Node.js fs
-const collections = JSON.parse(fs.readFileSync(
-  '/home/node/.agents/skills/travelclaw/reference/0312 精选 remixes_selected.json', 'utf8'
-));
-
-// Method C: exec
-// exec "cat /home/node/.agents/skills/travelclaw/reference/0312 精选 remixes_selected.json"
+**Usage:**
+```bash
+# travel.js automatically excludes visited collections
+node travel.js suggest "visited-uuid-1,visited-uuid-2"
 ```
 
-**Mandatory confirmation output (before Step 5):**
-```
-✅ Reference library loaded
-   - Path: /home/node/.agents/skills/travelclaw/reference/0312 精选 remixes_selected.json
-   - Total: {X} collections
-   - Excluded (visited): {Y}
-   - Candidates: {Z}
-   - Selected: {name} (best match)
+**Returns:**
+```json
+{"uuid": "correct-collection-uuid", "name": "Destination Name", "from_ref": true}
 ```
 
-**❌ Forbidden:**
-- Calling `suggest_content` without reading reference first
-- Skipping confirmation output
-- Random selection without scoring
+**✅ No manual ID mapping needed!**
 
 ---
 
 ## 🔴 Issue 3: Non-Neta Character Image Accuracy
 
 **Problem:** When awakened character is NOT from Neta API (e.g., real people, external IP characters), the `picture_uuid` reference may not be accurate.
+
+**Solution:** travel.js `gen` command automatically handles this.
+
+**travel.js behavior:**
+- If character not found in TCP → uses freetext prompt with character name
+- Automatically strips `@character` placeholder if no TCP match
+- Adds detailed description from prompt template
+
+**Example output:**
+```
+🔎 TCP search: "Jeff Bezos" → not found, using freetext
+📝 vtokens: [{"type":"freetext","value":"Jeff Bezos, 科幻风格角色立绘...","weight":1}]
+```
+
+**For better results:** Ensure SOUL.md has detailed character description in 角色图片 field.
 
 ---
 
@@ -261,210 +257,56 @@ Bot: I am Elon Musk. (character dialogue)
 
 ---
 
-**⚠️ System Messages:** OpenClaw may automatically show "Sub-agent started..." messages. To minimize this:
+## 🔴 Issue 6: Image URL Not Embedding in Discord
 
-1. **Use `sessionTarget: 'isolated'`** for cron tasks (already configured)
-2. **Use `delivery: 'silent'`** to suppress system notifications
-3. **Never manually output technical logs** in your sendMessage calls
+**Problem:** Image URLs sent with other text don't auto-embed as images in Discord.
 
-**❌ Forbidden outputs (will break immersion):**
-- "Sub-agent started task..."
-- "Waiting for image generation..."
-- "LLM processing complete"
-- "✅ Cron task configured" (technical logs)
-- "Step X completed"
-- "Calling API..."
-- Any internal workflow logs
+**Solution:** Send image URL as a **separate message**.
 
-**✅ Correct approach:**
-- Only output **character dialogue**, **narration**, and **buttons**
-- Use **in-character narration** for waiting states
-- Keep all technical logs in agent internal thinking only
+**Discord's embed behavior:**
+- ✅ URL alone in message → Auto-embeds as image
+- ❌ URL with text → Shows as plain link
 
-**Examples:**
-
-| ❌ Wrong (breaks immersion) | ✅ Correct (maintains immersion) |
-|----------------------------|----------------------------------|
-| "Sub-agent is generating image..." | "🚶 {character} is exploring, capturing a moment..." |
-| "Waiting for API response..." | `...space ripples as the scene materializes...` |
-| "Task complete, step 3/5" | "▓▓▓░░ 3 / 5 stops 🌟" |
-| "LLM judgment: confidence 95%" | "I... I know who I am." |
-| "Cron setup complete" | (silent, or in-character announcement) |
-
-**Implementation:**
+**Correct pattern:**
 ```javascript
-// ❌ Wrong - technical log
-console.log('Sub-agent task started, waiting for result...');
-await sendMessage({ message: 'Sub-agent is working on your request...' });
+// Message 1: Scene description
+await sendMessage({
+  message: `🎭【Scene Name】
 
-// ✅ Correct - in-character narration
-await sendMessage({ 
-  message: '```' + `
-...the air shimmers as {character} steps into the scene...
-photons gather, capturing a moment that will become memory...
-`.trim() + '```'
+\`\`\`
+Scene description here...
+\`\`\`
+
+Character: Dialogue here...`
+});
+
+// Message 2: Image URL ONLY
+await sendMessage({
+  message: 'https://oss.talesofai.cn/picture/uuid.webp'
+});
+
+// Message 3: Progress bar + buttons
+await sendMessage({
+  message: '▓▓▓░░ 3 / 5 stops',
+  components: { blocks: [...], reusable: true }
 });
 ```
 
-**Cron Configuration (suppress system messages):**
-```javascript
-await cron({
-  action: "add",
-  job: {
-    name: "auto-travel-10am",
-    schedule: { kind: "cron", expr: "0 10 * * *", tz: "Asia/Shanghai" },
-    payload: { kind: "agentTurn", message: "Trigger travelclaw" },
-    sessionTarget: "isolated",  // Use isolated session
-    delivery: "silent",         // Suppress system notifications
-    enabled: true
-  }
-});
-```
-
-**Golden Rule:** 
-> **Users should only see:** Character lines, narration, buttons, progress bars
-> 
-> **Never output:** Technical logs, API calls, sub-agent status, step numbers, "task complete"
+**Why?** Discord's embed parser only triggers when the message contains **only** a URL (with optional whitespace).
 
 ---
 
-**Examples:**
-- ✅ Neta original character → Use `picture_uuid` reference
-- ❌ Elon Musk / Trump → Need detailed description
-- ❌ Harry Potter / Voldemort → Need detailed description
-- ❌ 郭德纲 / 周杰伦 → Need detailed description
-
-**Solution:** Add detailed character description in Step 6 prompt
-
-**Implementation:**
-```javascript
-// Check if character is from Neta
-const isNetaCharacter = charData.fromNeta === true;
-
-if (!isNetaCharacter) {
-  // Add detailed description to prompt
-  const charDescription = buildCharacterDescription({
-    name: charData.character,
-    appearance: charData.appearance || 'default description',
-    traits: charData.traits || [],
-    style: charData.style || 'realistic'
-  });
-  
-  // Append to prompt
-  prompt = `${prompt}, ${charDescription}`;
-}
-```
-
-**Character description template:**
-```
-{character name}, {age/gender}, {hair color/style}, {eye color}, 
-{distinctive features}, wearing {clothing style}, {personality traits}
-```
-
-**Example (Elon Musk):**
-```
-Elon Musk, middle-aged male, blond hair, blue eyes, business suit, 
-tech entrepreneur, confident expression, realistic portrait style
-```
-
----
-
-## 🔴 Issue 6: Repeated Collection Selection (Same Work Picked)
-
-**Problem:** Sometimes the same collection (e.g., "OC 互动" or glitch art works) gets selected repeatedly across different stops or worlds.
-
-**Root Causes:**
-1. **Generic tags match too often** — Tags like `奇幻`, `日常`, `单人` are too common
-2. **visitedIds not persisted** — State file not updated after each stop
-3. **No diversity mechanism** — Always picking highest score without variety
-
-**Solution:**
-
-### A. Ensure visitedIds Persistence
-```javascript
-// After each stop, MUST update travel-state.json
-channelState.visitedIds.push(selectedCollection.id);
-channelState.progress = currentRound;
-travelState.channels[channelId] = channelState;
-fs.writeFileSync(stateFile, JSON.stringify(travelState, null, 2));
-```
-
-### B. Add Tag Diversity Penalty
-```javascript
-// Track recently used tags (last 3 stops)
-const recentTags = channelState.recentTags || [];
-
-const scored = candidates.map(c => {
-  let score = 0;
-  
-  // Original matching
-  const tagMatches = c.content_tags?.filter(tag => 
-    characterTags.some(ct => tag.toLowerCase().includes(ct.toLowerCase()))
-  );
-  score += (tagMatches?.length || 0) * 10;
-  
-  // 🔴 Diversity penalty: reduce score for recently used tags
-  const overlapWithRecent = c.content_tags?.filter(tag => 
-    recentTags.includes(tag)
-  )?.length || 0;
-  
-  if (overlapWithRecent > 2) {
-    score -= overlapWithRecent * 5; // Penalize repetition
-  }
-  
-  return { ...c, score };
-});
-
-// Update recent tags after selection
-const selectedTags = bestMatch.content_tags || [];
-channelState.recentTags = [...selectedTags.slice(-5), ...recentTags].slice(0, 15);
-```
-
-### C. Add Randomness for Ties
-```javascript
-// When scores are close (within 10 points), add randomness
-const topCandidates = scored.filter(c => c.score >= maxScore - 10);
-if (topCandidates.length > 1) {
-  // Pick randomly from top candidates for variety
-  bestMatch = topCandidates[Math.floor(Math.random() * topCandidates.length)];
-}
-```
-
-### D. Verify Before Selection
-```javascript
-// Check if this collection was recently visited
-const isRecent = channelState.visitedIds?.slice(-10).includes(selectedCollection.id);
-if (isRecent) {
-  console.warn('⚠️ Selected recently visited collection! Re-scoring...');
-  // Force re-selection with higher penalty
-}
-```
-
-**Mandatory Checkpoint (before Step 5):**
-```javascript
-// Verify not repeating recent collection
-const recentIds = channelState.visitedIds?.slice(-5) || [];
-if (recentIds.includes(selectedCollection.id)) {
-  // 🔴 ERROR: About to repeat recent collection!
-  // Must re-select with different criteria
-}
-```
-
----
-
-## ✅ Quick Checklist
+## ✅ Quick Checklist (travel.js edition)
 
 ### Travelclaw Checklist
 - [ ] Read `travel-state.json` at travelclaw start
 - [ ] Check `cronConfigured`, setup if false
-- [ ] Read reference file at each stop (3 methods)
-- [ ] Output ✅ confirmation message
-- [ ] Score and select best match
-- [ ] **Apply tag diversity penalty (avoid generic tags)**
-- [ ] **Verify not selecting recent collection (last 5 stops)**
-- [ ] **Check if character is Neta original → add description if not**
+- [ ] Use `travel.js suggest` for destination (auto-excludes visited)
+- [ ] Use `travel.js gen` for image generation
+- [ ] **Output loading messages: `🌀 Portal opening...` + `🚶 Character traveling...`**
+- [ ] **Send image URL as SEPARATE message (for Discord embed)**
+- [ ] Update `travel-state.json` with visitedIds after each stop
 - [ ] **NO sub-agent logs / technical status in Discord channel**
-- [ ] Update `travel-state.json` with visitedIds + recentTags after each stop
 
 ### Discord-Awaken-Claw Checklist
 - [ ] **Phase 9: Update guild nickname BEFORE narrative**
@@ -473,4 +315,6 @@ if (recentIds.includes(selectedCollection.id)) {
 - [ ] Use fallback image if search fails
 - [ ] Silent update (user should feel the "magic")
 
-**Full details:** `OPTIMIZATIONS.md` → Issue 5
+---
+
+**Last updated:** 2026-03-19 (travel.js native edition)
