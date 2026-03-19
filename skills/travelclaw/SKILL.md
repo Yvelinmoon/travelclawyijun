@@ -8,7 +8,7 @@ description: Triggered directly after the awakening flow in which the lobster ba
 
 ---
 
-## 🔴🔴🔴 CRITICAL: CRON SETUP (FIRST USE ONLY)
+## 🔴 CRITICAL: CRON SETUP (FIRST USE ONLY)
 
 **BEFORE executing ANY travel step, you MUST:**
 
@@ -715,7 +715,7 @@ After reading the world info, **merge all content into one message** and output 
 
 ```javascript
 await sendMessage({
- message: `# N E T A U N I V E R S E
+ message: `# N E T A   U N I V E R S E
 
 ## 【Coordinates Mapped】
 **Worlds Mapped** \`${world_count}\` | **World Tag** \`${world_name}\`
