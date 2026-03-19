@@ -235,7 +235,7 @@ function createButtonRow(options, userId, extraBtn = null) {
 }
 
 // ─── Channel Join Auto-Trigger ────────────────────────────────────────
-async function handleChannelCreate(event, sendMessage) {
+async function handleChannelCreate(event, sendMessage, channel, botId) {
   const channelId = event.id;
   const channelType = event.type; // 0 = GUILD_TEXT, 5 = GUILD_ANNOUNCEMENT
 
@@ -250,14 +250,69 @@ async function handleChannelCreate(event, sendMessage) {
   if (hasSeenChannel(channelId)) return;
   markChannelSeen(channelId);
 
-  // 🔴 Updated: no longer use buttons to trigger; instead guide user to @bot and send "start awakening"
-  await sendMessage({
-    message: `**Lobster Baby is sleeping** 💤
+  // 🔴 Language detection based on NETA_BASE_URL
+  const netaBaseUrl = process.env.NETA_BASE_URL || 'https://api.talesofai.com';
+  const isEnglish = netaBaseUrl.endsWith('.com');
+  
+  // 🔴 Try to fetch the human user and @them
+  let mentionText = '';
+  try {
+    let humanMember = null;
+    
+    // Group DM channels use recipients
+    if (channel.recipients) {
+      humanMember = channel.recipients.find(u => !u.bot);
+    } 
+    // Guild text channels: find from permission overwrites
+    else if (channel.guild && event.permission_overwrites) {
+      // Look for user-specific permission overwrites (not @everyone, not roles, not bot)
+      const userOverwrites = event.permission_overwrites.filter(ow => {
+        const { type, id } = ow;
+        // Type 0 = role, Type 1 = member
+        // Filter: must be member-specific AND not the bot itself
+        return type === 1 && id !== botId;
+      });
+      
+      if (userOverwrites.length > 0) {
+        // Use the first member-specific overwrite (excluding bot) as the target user
+        const targetUserId = userOverwrites[0].id;
+        if (targetUserId) {
+          mentionText = `<@${targetUserId}> `;
+        }
+      }
+    }
+    
+    if (humanMember && !mentionText) {
+      mentionText = `<@${humanMember.id}> `;
+    }
+  } catch (err) {
+    console.log('[mention] ❌', err.message);
+  }
 
-@me and send "**start awakening**" to wake the shrimp baby...
+  // 🔴 Scene-based message with @mention (language-aware)
+  if (isEnglish) {
+    // English output (.com)
+    await sendMessage({
+      message: `**Lobster Baby is sleeping** 💤
 
-...`,
-  });
+@me and send "**start awakening**" to wake me...
+
+...
+
+${mentionText}I'm waiting for you.`,
+    });
+  } else {
+    // Chinese output (.cn)
+    await sendMessage({
+      message: `**龙虾宝宝正在沉睡** 💤
+
+@我并发送 "**start awakening**" 唤醒我...
+
+...
+
+${mentionText}等你哦～`,
+    });
+  }
 }
 
 // ─── Main Handler ─────────────────────────────────────────────────────
