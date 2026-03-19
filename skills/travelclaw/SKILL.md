@@ -208,150 +208,85 @@ description: Triggered directly after the awakening flow in which the lobster ba
 
 ### ⏰ Check and set cron scheduled travel task (mandatory on first use!)
 
-**🔴 STOP! Read OPTIMIZATIONS.md first!**
+**🔴 MANDATORY: Check cronConfigured before ANY travel action**
 
-**Before proceeding, you MUST:**
-1. Read `OPTIMIZATIONS.md` → Issue 1 (Cron Tasks)
-2. Follow the mandatory flow exactly as specified
-3. Use `travel-state.json` for persistence (do NOT rely on memory)
-
-**Quick reference:**
 ```javascript
-// File: OPTIMIZATIONS.md → Issue 1
 const stateFile = '~/.openclaw/workspace/memory/travel-state.json';
 let travelState = JSON.parse(fs.readFileSync(stateFile, 'utf8'));
 if (!travelState.channels[channelId]?.cronConfigured) {
- await setupCronTasks(channelId);
- travelState.channels[channelId].cronConfigured = true;
- fs.writeFileSync(stateFile, JSON.stringify(travelState, null, 2));
+  await setupCronTasks(channelId);
+  travelState.channels[channelId].cronConfigured = true;
+  fs.writeFileSync(stateFile, JSON.stringify(travelState, null, 2));
 }
 ```
 
 ---
 
-**🔴 MANDATORY RULES（violation will break travel function）：**
-- ✅ **Every time travelclaw triggers，MUST cron **
-- ✅ **cron task statusMUST be written to persistence file，rely on memory**
-- ✅ **If cron is not configured，MUST setup immediately，do NOT skip**
+## 实现方式（OpenClaw Cron + Sessions Spawn）
 
----
+### 第一步：设置定时任务（每天 10 点和 20 点）
 
-#### 📁 （ cron ）
+**使用 cron 工具创建两个定时任务：**
 
-**：** `~/.openclaw/workspace/memory/travel-state.json`
-
-**/：**
 ```javascript
-// travelclaw trigger，
-const fs = require('fs');
-const path = require('path');
+// 获取设备时区（不要写死 Asia/Shanghai）
+const deviceTz = Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC';
 
-const stateDir = path.join(process.env.HOME, '.openclaw/workspace/memory');
-const stateFile = path.join(stateDir, 'travel-state.json');
+// 早 10 点任务
+await cron({
+  action: "add",
+  job: {
+    name: "自动旅行 - 早 10 点",
+    schedule: {
+      kind: "cron",
+      expr: "0 10 * * *",
+      tz: deviceTz  // 使用设备所在时区
+    },
+    payload: {
+      kind: "agentTurn",
+      message: "【自动旅行 - 早 10 点】检查并执行旅行任务。步骤：1) 读取当前旅行状态；2) 如果正在旅行，继续下一站；3) 如果已完成 5 站，触发 Opening 并开始新世界第 1 站；4) 如果从未开始，触发 Opening。"
+    },
+    sessionTarget: "isolated",
+    enabled: true
+  }
+});
 
-// 
-if (!fs.existsSync(stateDir)) {
- fs.mkdirSync(stateDir, { recursive: true });
-}
-
-// 
-let travelState = {};
-if (fs.existsSync(stateFile)) {
- travelState = JSON.parse(fs.readFileSync(stateFile, 'utf8'));
-} else {
- travelState = { channels: {}, version: '1.0' };
- fs.writeFileSync(stateFile, JSON.stringify(travelState, null, 2));
-}
+// 晚 20 点任务
+await cron({
+  action: "add",
+  job: {
+    name: "自动旅行 - 晚 20 点",
+    schedule: {
+      kind: "cron",
+      expr: "0 20 * * *",
+      tz: deviceTz  // 使用设备所在时区
+    },
+    payload: {
+      kind: "agentTurn",
+      message: "【自动旅行 - 晚 20 点】检查并执行旅行任务。步骤同上。"
+    },
+    sessionTarget: "isolated",
+    enabled: true
+  }
+});
 ```
 
-**：**
-```json
-{
- "channels": {
- "1483595663399846049": {
- "cronConfigured": true,
- "cronJobIds": ["auto-travel-10am", "auto-travel-8pm"],
- "currentWorld": "Fate",
- "progress": 3,
- "totalStops": 5,
- "visitedIds": ["collection-uuid-1", "collection-uuid-2"],
- "lastTravel": "2026-03-17T10:00:00Z",
- "characterName": "Artoria"
- }
- },
- "version": "1.0"
-}
-```
+### 第二步：子代理任务逻辑
 
----
+**当 cron 触发时，子代理会收到消息，然后执行：**
 
-#### ✅ Cron flow（EveryMUST）
+1. **读取旅行状态** - 获取当前角色位置、进度
+2. **判断状态：**
+   - 正在旅行中 → 执行下一站
+   - 已完成 5 站 → 触发 Opening + 新世界第 1 站
+   - 从未开始 → 触发 Opening
+3. **发送结果** - 向用户频道发送执行结果
 
-** 1：**
-```javascript
-const channelId = message?.channelId || interaction?.channelId;
-const channelState = travelState.channels[channelId] || { cronConfigured: false, visitedIds: [] };
-```
+### 关键约束
 
-** 2： cron **
-```javascript
-if (!channelState.cronConfigured) {
- // 🔴 Output: Planning announcement (in-character)
- await sendMessage({ 
- message: `✨ ${characterName} is planning the journey...
-
-*Checking coordinates, mapping worlds, preparing the adventure...*` 
- });
- console.log('ℹ️ Cron already configured for this channel');
-}
-```
-
-**🔴 Output Messages (English, In-Character):**
-
-| Timing | Message |
-|--------|---------|
-| **Before setup** | `✨ {characterName} is planning the journey...` |
-| **After setup** | `✅ Journey planned, {characterName}!` + schedule details |
-
-**Purpose:** Let user know cron setup succeeded without breaking immersion.
-
-** 3： cron （not configured）**
-```javascript
-async function setupCronTasks(channelId) {
- // 10am task
- await cron({
- action: "add",
- job: {
- name: `auto-travel-10am-${channelId}`,
- schedule: { kind: "cron", expr: "0 10 * * *", tz: "Asia/Shanghai" },
- payload: {
- kind: "agentTurn",
- message: `【auto-travel-10am】Trigger travelclaw in channel ${channelId}`
- },
- sessionTarget: "isolated",
- enabled: true
- }
- });
-
- // 8pm task
- await cron({
- action: "add",
- job: {
- name: `auto-travel-8pm-${channelId}`,
- schedule: { kind: "cron", expr: "0 20 * * *", tz: "Asia/Shanghai" },
- payload: {
- kind: "agentTurn",
- message: `【auto-travel-8pm】Trigger travelclaw in channel ${channelId}`
- },
- sessionTarget: "isolated",
- enabled: true
- }
- });
-
- // cron job IDs 
- channelState.cronJobIds = [`auto-travel-10am-${channelId}`, `auto-travel-8pm-${channelId}`];
-}
-```
+- **cron 任务由 Gateway 守护进程执行**，需要 Gateway 运行且配对成功
+- **消息投递通过 delivery 配置**，默认会通知到原会话
+- **子代理在独立会话中运行**，与原会话隔离
 
 ---
 
@@ -412,57 +347,6 @@ Want to adjust the travel plan?
 
 Use the cron tool to create two scheduled tasks:
 
-```javascript
-// 10am task
-await cron({
- action: "add",
- job: {
- name: "auto-travel-10am",
- schedule: {
- kind: "cron",
- expr: "0 10 * * *",
- tz: "Asia/Shanghai"
- },
- payload: {
- kind: "agentTurn",
- message: "【auto-travel-10am】Check and execute travel task. Steps: 1) read current travel state; 2) if traveling, continue to next stop; 3) if 5 stops complete, trigger Opening and start new world stop 1; 4) if never started, trigger Opening."
- },
- sessionTarget: "isolated", // Isolated session (prevents main session pollution)
- delivery: "silent", // Suppress system notifications (immersion protection)
- enabled: true
- }
-});
-
-// 8pm task
-await cron({
- action: "add",
- job: {
- name: "auto-travel-8pm",
- schedule: {
- kind: "cron",
- expr: "0 20 * * *",
- tz: "Asia/Shanghai"
- },
- payload: {
- kind: "agentTurn",
- message: "【auto-travel-8pm】Check and execute travel task. Same steps as above."
- },
- sessionTarget: "isolated", // Isolated session
- delivery: "silent", // Suppress system notifications
- enabled: true
- }
-});
-```
-
-**🔴 Important:** `delivery: "silent"` suppresses system notifications like "Sub-agent started...". This is critical for maintaining immersion.
-
-### Step 2: Sub-agent task logic
-**When cron triggers, the sub-agent receives a message and then executes:**
-- Read travel state — get current character location and progress
-- Evaluate state:
- - Currently traveling → execute next stop
- - 5 stops complete → trigger Opening + new world stop 1
- - Never started → trigger Opening
  - Send result — send execution result to user channel
 
 ### Key constraints
