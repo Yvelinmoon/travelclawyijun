@@ -250,48 +250,38 @@ async function handleChannelCreate(event, sendMessage, channel, botId) {
   if (hasSeenChannel(channelId)) return;
   markChannelSeen(channelId);
 
-  // 🔴 Language detection based on NETA_BASE_URL
+  // Language detection based on NETA_BASE_URL
   const netaBaseUrl = process.env.NETA_BASE_URL || 'https://api.talesofai.com';
   const isEnglish = netaBaseUrl.endsWith('.com');
-  
-  // 🔴 Try to fetch the human user and @them
+
+  // Resolve the target user to @mention
   let mentionText = '';
   try {
-    let humanMember = null;
-    
-    // Group DM channels use recipients
-    if (channel.recipients) {
-      humanMember = channel.recipients.find(u => !u.bot);
-    } 
-    // Guild text channels: find from permission overwrites
-    else if (channel.guild && event.permission_overwrites) {
-      // Look for user-specific permission overwrites (not @everyone, not roles, not bot)
-      const userOverwrites = event.permission_overwrites.filter(ow => {
-        const { type, id } = ow;
-        // Type 0 = role, Type 1 = member
-        // Filter: must be member-specific AND not the bot itself
-        return type === 1 && id !== botId;
-      });
-      
-      if (userOverwrites.length > 0) {
-        // Use the first member-specific overwrite (excluding bot) as the target user
-        const targetUserId = userOverwrites[0].id;
-        if (targetUserId) {
-          mentionText = `<@${targetUserId}> `;
-        }
+    // Prefer targetUserId from channel-listener (already filtered: non-bot, non-owner, non-admin)
+    if (event.targetUserId) {
+      mentionText = `<@${event.targetUserId}> `;
+    }
+    // Fallback: group DM recipients
+    else if (channel && channel.recipients) {
+      const humanMember = channel.recipients.find(u => !u.bot);
+      if (humanMember) {
+        mentionText = `<@${humanMember.id}> `;
       }
     }
-    
-    if (humanMember && !mentionText) {
-      mentionText = `<@${humanMember.id}> `;
+    // Fallback: scan permission overwrites for a non-bot member
+    else if (event.permission_overwrites) {
+      const userOverwrites = event.permission_overwrites.filter(ow => {
+        return ow.type === 1 && ow.id !== botId;
+      });
+      if (userOverwrites.length > 0) {
+        mentionText = `<@${userOverwrites[0].id}> `;
+      }
     }
   } catch (err) {
-    console.log('[mention] ❌', err.message);
+    console.log('[mention] Failed:', err.message);
   }
 
-  // 🔴 Scene-based message with @mention (language-aware)
   if (isEnglish) {
-    // English output (.com)
     await sendMessage({
       message: `**Lobster Baby is sleeping** 💤
 
@@ -302,7 +292,6 @@ async function handleChannelCreate(event, sendMessage, channel, botId) {
 ${mentionText}I'm waiting for you.`,
     });
   } else {
-    // Chinese output (.cn)
     await sendMessage({
       message: `**龙虾宝宝正在沉睡** 💤
 
@@ -341,7 +330,6 @@ function extractUserIdFromButton(customId) {
 async function startAwakening(userId, channelId, guildId, sendMessage) {
   setGame(userId, newGame(channelId, guildId));
 
-  // 🔴 Updated: guide message + prompt to send message to continue (button is UI decoration)
   await sendMessage({
     message: `○  Lobster Baby · Waiting to hatch
 
@@ -370,7 +358,6 @@ I will become them.
 }
 
 async function promptInitialWord(channelId, sendMessage, callLLM) {
-  // 🔴 Updated: after user sends "start awakening", directly prompt for character description
   if (callLLM && typeof callLLM === 'function') {
     try {
       const prompt = `You are a lobster baby waiting to hatch. The user has just woken you up, indicating they already have a character in mind.
@@ -412,7 +399,7 @@ async function handleInitialWord(userId, word, sendMessage, callLLM) {
 
   await sendMessage({ message: `"${word}"` });
 
-  // 🔴 If no callLLM (standalone process mode), use simple follow-up
+  // If no callLLM (standalone process mode), use simple follow-up
   if (!callLLM || typeof callLLM !== 'function') {
     await sendMessage({
       message: 'I sense a certain outline…\n\nLet me learn a little more.',
@@ -601,20 +588,20 @@ async function handleButtonInteraction(userId, channelId, guildId, customId, sen
       await sendMessage({ message: 'Sure, please describe this character\'s traits in your own words.' });
       break;
 
-    case 'confirm_yes':
-      if (!game.charData) { await sendMessage({ message: '⚠ Character data not found.' }); return; }
-      await awaken(userId, channelId, guildId, sendMessage);
-      break;
-
-    case 'confirm_no':
-      if (!game.charData) { await sendMessage({ message: '⚠ Character data not found.' }); return; }
-      game.wrongGuesses.push(game.charData.character);
-      game.charData = null;
-      game.currentQuestion = null;
-      game.currentOptions = [];
-      setGame(userId, game);
-      await sendMessage({ message: 'Understood, let me keep sensing…' });
-      await processNextStep(userId, sendMessage, callLLM);
+    case 'confirm':
+      if (parts[1] === 'yes') {
+        if (!game.charData) { await sendMessage({ message: '⚠ Character data not found.' }); return; }
+        await awaken(userId, channelId, guildId, sendMessage);
+      } else if (parts[1] === 'no') {
+        if (!game.charData) { await sendMessage({ message: '⚠ Character data not found.' }); return; }
+        game.wrongGuesses.push(game.charData.character);
+        game.charData = null;
+        game.currentQuestion = null;
+        game.currentOptions = [];
+        setGame(userId, game);
+        await sendMessage({ message: 'Understood, let me keep sensing…' });
+        await processNextStep(userId, sendMessage, callLLM);
+      }
       break;
 
     default:
@@ -626,31 +613,23 @@ async function handleDiscordMessage(context, callLLM) {
   const { userId, channelId, guildId, content, sendMessage, interactionType = 'message' } = context;
 
   try {
-    // 🔴 OpenClaw only handles regular messages, not Discord button interactions
-    // All interactions are completed through user messages
+    // OpenClaw only handles regular messages, not Discord button interactions
     if (interactionType === 'message') {
-      // 🔴 Fix: content may be undefined; add safety check
       if (!content) {
         console.log('[message] content is empty, skipping');
         return false;
       }
 
-      // 🔴 Check awakening command first to avoid interference from stale state
+      // Check awakening command first to avoid interference from stale state
       if (isAwakeningCommand(content)) {
-        // Clear stale state
         const state = loadState();
         delete state[userId];
         saveState(state);
-        // Start new game
         await startAwakening(userId, channelId, guildId, sendMessage);
         return true;
       }
 
-      // Get current game state (now fresh state or no state)
       const game = getGame(userId);
-
-      // 🔴 Removed "I have one in mind" auto-handling — avoids conflict with awakening command
-      // User needs to send full character description, not a simple confirmation
 
       if (game?.awakened) {
         const handled = await handleAwakenedChat(userId, channelId, guildId, content, sendMessage, callLLM);
@@ -658,11 +637,8 @@ async function handleDiscordMessage(context, callLLM) {
       }
 
       if (game?.waitingFor === 'word') {
-        // 🔴 Fix: clean @mention and extra whitespace
         let cleanContent = content.trim();
-        // Remove <@1234567890> format mentions
         cleanContent = cleanContent.replace(/<@\d+>/g, '').trim();
-        // 🔴 Removed character limit: allow full descriptions
         const word = cleanContent;
         game.waitingFor = null;
         await handleInitialWord(userId, word, sendMessage, callLLM);
