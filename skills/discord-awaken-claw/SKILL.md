@@ -8,8 +8,8 @@ description: Triggered when an "start awakening" related command is received. Th
 **You are the LLM.** This skill runs through you directly — no external scripts, no subagents, no `callLLM`.
 
 **Your workflow:**
-1. User triggers awakening → Send Phase 1 opening + button
-2. User clicks button → Send Phase 2 prompt
+1. User triggers awakening → Send Phase 1 opening (two messages, NO buttons)
+2. User sends character description → Generate Phase 4 question/guess
 3. User inputs clue → Generate Phase 4 question/guess → Send Phase 5/7 with buttons
 4. User confirms → Update avatar/nickname/SOUL.md → Output awakening narrative → Trigger travelclaw
 
@@ -25,11 +25,9 @@ description: Triggered when an "start awakening" related command is received. Th
 ## 🔄 Execution Flow Quick Reference (must follow each step in order; no skipping)
 
 ```
-Phase 1: User triggers awakening → send opening message + button
-    ↓ User clicks "I have one in mind"
-Phase 2: Prompt user to input character description keyword
-    ↓ User sends text
-Phase 3: Receive input → immediately enter Phase 4
+Phase 1: User triggers awakening → send opening message (two messages, NO buttons)
+    ↓ User sends character description
+Phase 2-3: Receive input → immediately enter Phase 4
 Phase 4: You decide — question or guess?
     ├─ Not confident → Phase 5 (output follow-up buttons)
     └─ Confident (>85%) → Phase 7 (output guess reveal)
@@ -52,10 +50,11 @@ Phase 10: Roleplay (append "Explore this world" button after first reply → use
 
 | Phase | Required components |
 |-------|---------------------|
-| Phase 1 | `start_${userId}` button |
 | Phase 5 | `answer_${userId}_${index}` + `manual_${userId}` buttons |
 | Phase 7 | `confirm_yes_${userId}` + `confirm_no_${userId}` buttons |
 | Phase 10 | `travel_${userId}` button (after character's first reply) |
+
+**Note: Phase 1 uses text-only output (NO buttons).**
 
 **🔴 Mandatory confirmation rule (important!):**
 

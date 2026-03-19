@@ -302,37 +302,6 @@ if (!channelState.cronConfigured) {
 
 *Checking coordinates, mapping worlds, preparing the adventure...*` 
  });
- 
- // cron is not configured，MUST setup immediately
- await setupCronTasks(channelId);
- channelState.cronConfigured = true;
- travelState.channels[channelId] = channelState;
- fs.writeFileSync(stateFile, JSON.stringify(travelState, null, 2));
- 
- // 🔴 Output: Setup complete (in-character) + buttons
- await sendMessage({ 
- message: `✅ Journey planned, ${characterName}!
-
-**Auto-Travel Schedule:**
-- 🕐 10:00 AM daily
-- 🕗 8:00 PM daily
-- 📍 Each session: 1 stop exploration
-
-*Ready to explore the Neta Universe whenever you are!*`,
- components: {
- blocks: [{
- type: 'actions',
- buttons: [
- { label: 'Start Exploring 🌀', customId: `start_exploring_${userId}`, style: 'primary' },
- { label: 'Adjust Plan ⚙️', customId: `adjust_plan_${userId}`, style: 'secondary' },
- ],
- }],
- reusable: true,
- },
- });
- 
- console.log('✅ Cron tasks configured and saved to travel-state.json');
-} else {
  console.log('ℹ️ Cron already configured for this channel');
 }
 ```
@@ -556,41 +525,6 @@ Display progress bar + button options:
 
 ---
 
-### 🔘 Cron Setup Buttons (after first-time setup)
-
-**After cron is configured, output confirmation message with buttons:**
-
-```javascript
-await sendMessage({
- message: `✅ Journey planned, ${characterName}!
-
-**Auto-Travel Schedule:**
-- 🕐 10:00 AM daily
-- 🕗 8:00 PM daily
-- 📍 Each session: 1 stop exploration
-
-*Ready to explore the Neta Universe whenever you are!*`,
- components: {
- blocks: [{
- type: 'actions',
- buttons: [
- { label: 'Start Exploring 🌀', customId: `start_exploring_${userId}`, style: 'primary' },
- { label: 'Adjust Plan ⚙️', customId: `adjust_plan_${userId}`, style: 'secondary' },
- ],
- }],
- reusable: true,
- },
-});
-```
-
-**Button handlers:**
-
-| Button | Action |
-|--------|--------|
-| **Start Exploring 🌀** | Immediately trigger travelclaw main flow (Step 2 → Step 3 → auto-trigger Step 4 first stop) |
-| **Adjust Plan ⚙️** | Open settings panel to modify cron schedule, frequency, etc. |
-
-**Purpose:** Let user start their first journey immediately after cron setup, without waiting for the next scheduled trigger.
 
 ---
 
@@ -783,7 +717,7 @@ After reading the world info, **merge all content into one message** and output 
 
 ```javascript
 await sendMessage({
- message: `# N E T A   U N I V E R S E
+ message: `# N E T A U N I V E R S E
 
 ## 【Coordinates Mapped】
 **Worlds Mapped** \`${world_count}\` | **World Tag** \`${world_name}\`
