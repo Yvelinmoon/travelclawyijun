@@ -266,27 +266,14 @@ openclaw cron add --tz "$TZ" ...
 ```
 
 **Call Gateway Cron API:**
-```bash
-# Task 1 - Morning (adjust --tz based on user timezone!)
-openclaw cron add \
-  --name "auto-travel-am-{channelId}" \
-  --cron "0 10 * * *" \
-  --tz "{USER_TIMEZONE}" \
-  --message "【auto-travel】Trigger travelclaw in channel {channelId}" \
-  --channel "{channelId}" \
-  --session "isolated" \
-  --announce
+**ATTENTION**
+**Important Steps**
+**Note! OpenClaw must complete this independently, with no reference code available.**
 
-# Task 2 - Evening (adjust --tz based on user timezone!)
-openclaw cron add \
-  --name "auto-travel-pm-{channelId}" \
-  --cron "0 20 * * *" \
-  --tz "{USER_TIMEZONE}" \
-  --message "【auto-travel】Trigger travelclaw in channel {channelId}" \
-  --channel "{channelId}" \
-  --session "isolated" \
-  --announce
-```
+At this step, OpenClaw must independently use the `openclaw cron add` command to create two cron tasks for IP operations at 10:00 AM and 8:00 PM respectively.
+
+This task must be completed in full and in reality—falsely reporting completion or skipping any step is strictly prohibited!
+
 
 **Update state file:**
 ```javascript
