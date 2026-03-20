@@ -12,14 +12,14 @@ const handler = require('./direct-handler.js');
 
 const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
 
-const TOKEN = process.env.DISCORD_TOKEN;
+const TOKEN = process.env.DISCORD_BOT_TOKEN || '' ;
 const GUILD_ID = process.env.GUILD_ID;
-const LITELLM_BASE_URL = process.env.LITELLM_BASE_URL || 'https://litellm.talesofai.cn/v1';
+const LITELLM_BASE_URL = process.env.LITELLM_BASE_URL || '';
 const LITELLM_API_KEY = process.env.LITELLM_API_KEY;
 const MODEL = process.env.LLM_MODEL || 'litellm/qwen3.5-plus';
 
 if (!TOKEN) {
-  console.error('Missing DISCORD_TOKEN');
+  console.error('Missing DISCORD_BOT_TOKEN');
   process.exit(1);
 }
 
