@@ -1,0 +1,13 @@
+{
+  "channels": {
+    "1484176369586798613": {
+      "cronConfigured": true,
+      "cronJobIds": ["auto-travel-am-1484176369586798613", "auto-travel-pm-1484176369586798613"],
+      "visitedIds": [],
+      "recentTags": [],
+      "progress": 0,
+      "currentWorld": null,
+      "lastTravel": null
+    }
+  }
+}
