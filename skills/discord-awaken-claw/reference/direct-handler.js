@@ -268,11 +268,19 @@ async function handleChannelCreate(event, sendMessage, channel, botId) {
         mentionText = `<@${humanMember.id}> `;
       }
     }
-    // Fallback: scan permission overwrites for a non-bot member
+    // Fallback: scan permission overwrites for a non-bot, non-admin member
     else if (event.permission_overwrites) {
       const userOverwrites = event.permission_overwrites.filter(ow => {
-        return ow.type === 1 && ow.id !== botId;
+        // Type 1 = user, Type 0 = role
+        if (ow.type !== 1) return false;
+        if (ow.id === botId) return false;
+        // Check if user has admin permissions (allow = 8 or allow_new = 8)
+        const allow = BigInt(ow.allow || ow.allow_new || 0);
+        const isAdmin = (allow & BigInt(8)) !== BigInt(0);
+        if (isAdmin) return false;
+        return true;
       });
+      // Only mention if we found at least one non-bot, non-admin user
       if (userOverwrites.length > 0) {
         mentionText = `<@${userOverwrites[0].id}> `;
       }
