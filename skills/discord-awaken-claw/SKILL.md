@@ -129,7 +129,7 @@ description: Triggered when an "start awakening" related command is received. Th
 ### Phase 9 Check (Most Critical!)
 **Before:**
 - □ reference/discord-profile.js read
-- □ Confirm DISCORD_TOKEN or Gateway is available
+- □ Confirm DISCORD_BOT_TOKEN or Gateway is available
 **After each step:**
 - ① □ Atmosphere message sent
 - ② □ SOUL.md backed up and updated (including character_image field)
@@ -376,7 +376,7 @@ If step ④ avatar search fails → write `character_image: pending`, inform use
 Call Discord API directly:
 ```bash
 curl -X PATCH "https://discord.com/api/v10/guilds/{guildId}/members/@me" \
-  -H "Authorization: Bot $DISCORD_TOKEN" \
+  -H "Authorization: Bot $DISCORD_BOT_TOKEN" \
   -H "Content-Type: application/json" \
   -d '{"nick":"{charData.character}"}'
 ```
@@ -475,7 +475,7 @@ node -e "
 const fs = require('fs');
 const https = require('https');
 const avatar = fs.readFileSync('/tmp/avatar.png').toString('base64');
-const token = process.env.DISCORD_TOKEN;
+const token = process.env.DISCORD_BOT_TOKEN;
 const req = https.request('https://discord.com/api/v10/users/@me', {
   method: 'PATCH',
   headers: { 'Authorization': 'Bot ' + token, 'Content-Type': 'application/json' }
