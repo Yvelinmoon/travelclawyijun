@@ -49,104 +49,92 @@ description: Triggered when an "start awakening" related command is received. Th
 
 ## 🔁 Phase Check Logic (execute at each phase transition)
 
+**VERY IMPORTANT: Each check is the action principle for your next step. Strictly prohibited to ignore or skip.**
 **Before entering ANY phase:**
-```
-□ 语言检测：用户用什么语言？ → 全程使用该语言
-□ 上一步完成了吗？ → 没完成先补上
-□ 下一步是什么？ → 看 Phase 详情
-□ 有依赖文件吗？ → 先读 reference/
-```
+□ Language detection: What language is the user using? → Use this language throughout □ Did the previous step complete? → Complete it first if not done □ What is the next step? → Check Phase details □ Are there dependency files? → Read reference/ first
 
-**🔴 语言一致性规则（最高优先级）：**
-- 用户输入是中文 → 所有输出用中文（包括按钮、模板、角色台词）
-- 用户输入是英文 → 所有输出用英文
-- 用户输入是日文 → 所有输出用日文
-- **适用于：** 引导文本、按钮标签、猜测卡片、觉醒叙事、角色台词、错误提示
-- **检查时机：** 每个 Phase 输出前都要再次确认
+
+**🔴 Language Consistency Rules (Highest Priority):**
+- User input is Chinese → All output in Chinese (including buttons, templates, character lines)
+- User input is English → All output in English
+- User input is Japanese → All output in Japanese
+- **Applies to:** Guide text, button labels, guess cards, awakening narrative, character lines, error prompts
+- **Check timing:** Reconfirm before each Phase output
+
 
 ### Phase 1 Check
-**Before:** 无（起始点）
+**Before:** None (starting point)
 **After:** 
-- □ 已发送 2 条消息（固定文本 + 引导文本）
-- □ 都没有按钮
-- □ 语言与用户一致
-**Next:** 等待用户输入 → Phase 2-3
+- □ 2 messages sent (fixed text + guide text)
+- □ None have buttons
+- □ Language consistent with user
+**Next:** Wait for user input → Phase 2-3
+
 
 ### Phase 2-3 Check
 **Before:** 
-- □ 已读取用户输入
-- □ 已记录线索到 state
+- □ User input read
+- □ Clues recorded to state
 **After:**
-- □ 线索已保存
-**Next:** → Phase 4（决定提问还是猜测）
+- □ Clues saved
+**Next:** → Phase 4 (decide whether to question or guess)
+
 
 ### Phase 4 Check
 **Before:**
-- □ 已评估所有线索
-- □ 已计算置信度（>85% = 猜测，<85% = 提问）
+- □ All clues evaluated
+- □ Confidence calculated (>85% = guess, <85% = question)
 **After:**
-- □ 已生成 guess 或 question 对象
+- □ guess or question object generated
 **Next:** 
-- 置信度高 → Phase 7（sendMessage + 确认按钮）
-- 置信度低 → Phase 5（sendMessage + 选项按钮）
+- High confidence → Phase 7 (sendMessage + confirmation button)
+- Low confidence → Phase 5 (sendMessage + option buttons)
 
-### Phase 5 Check
+
+### Phase 5 Check （ Critical! ⚠️⚠️⚠️ Strictly determine and execute according to the method provided in ③ Change Guild nickname of you - you are the bot.）
 **Before:**
-- □ 已读取 reference/discord-profile.js（如有需要）
-- □ 选项不含角色名（用特征描述）
+- □ reference/discord-profile.js read (if needed)
+- □ Options don't contain character names (use characteristic descriptions)
 **After:**
-- □ sendMessage 已调用
-- □ components 已附加（按钮 customId 正确）
-**Next:** 等待用户点击 → Phase 6 → 回到 Phase 4
+- □ sendMessage called
+- □ components attached (button customId correct)
+**Next:** Wait for click → Phase 6 → Back to Phase 4
+
 
 ### Phase 6 Check
 **Before:**
-- □ 已读取用户选择的答案
-- □ 已记录到 state.answers
+- □ User's selected answer read
+- □ Recorded to state.answers
 **After:**
-- □ 答案已保存
-**Next:** → Phase 4（重新评估）
+- □ Answer saved
+**Next:** → Phase 4 (re-evaluate)
+
 
 ### Phase 7 Check
 **Before:**
-- □ charData 完整（character, from, emoji, color, desc, greet）
-- □ 即使给的是真名也必须显示确认按钮
+- □ charData complete (character, from, emoji, color, desc, greet)
+- □ Even if given a real name, must display confirmation button
 **After:**
-- □ 已发送 "I know who I am" 消息
-- □ 已发送猜测卡片 + 确认/拒绝按钮
-- □ 按钮 customId: `confirm_yes_${userId}` + `confirm_no_${userId}`
+- □ "I know who I am" message sent
+- □ Guess card + confirm/deny buttons sent
+- □ Button customId: `confirm_yes_${userId}` + `confirm_no_${userId}`
 **Next:**
-- 用户确认 → Phase 9
-- 用户拒绝 → 记录 wrongGuesses → Phase 4
+- User confirms → Phase 9
+- User denies → Record wrongGuesses → Phase 4
 
-### Phase 9 Check（最关键！）
+
+### Phase 9 Check (Most Critical!)
 **Before:**
-- □ 已读取 reference/discord-profile.js
-- □ 确认有 DISCORD_TOKEN 或 Gateway 可用
+- □ reference/discord-profile.js read
+- □ Confirm DISCORD_TOKEN or Gateway is available
 **After each step:**
-- ① □ 氛围消息已发送
-- ② □ SOUL.md 已备份并更新（含 character_image 字段）
-- ③ □ 昵称已调用 updateNickname() 或 Discord API
-- ④ □ 头像已调用 searchCharacterImage() 搜索
-- ⑤ □ 头像已调用 updateAvatar() 更新
-- ⑥ □ 觉醒叙事已输出（代码块 + 角色台词）
-**Next:** → travelclaw（自动触发，无需确认）
-
-### travelclaw Check
-**Before:**
-- □ SOUL.md 有 character_image
-- □ 已读取 travelclaw SKILL.md
-- □ 检查 Cron 是否已配置（travel-state.json）
-**After:**
-- □ 已输出 Loading 状态（"Scanning current coordinates..."）
-- □ 已搜索世界观（suggest_keywords → suggest_tags → get_hashtag_info）
-- □ 已发送 Opening（世界观介绍）
-- □ 已选择目的地（参考库优先 → 在线推荐 fallback）
-- □ 已生成图片（make_image）
-- □ 已输出场景模拟 + 图片 + 进度条 + 按钮
-- □ Cron 已设置（如未配置）
-- □ travel-state.json 已更新
-**Next:** 等待用户点击（继续/结束）
+- ① □ Atmosphere message sent
+- ② □ SOUL.md backed up and updated (including character_image field)
+- ③ □ Nickname called updateNickname() or Discord API
+- ④ □ Avatar called searchCharacterImage() search
+- ⑤ □ Avatar called updateAvatar() update
+- ⑥ □ Awakening narrative output (code block + character lines)
+**Next:** → travelclaw (automatic trigger, no confirmation needed)
 
 ---
 
