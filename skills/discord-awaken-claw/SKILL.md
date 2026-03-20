@@ -18,17 +18,20 @@ description: Triggered when an "start awakening" related command is received. Th
 ---
 
 ## 🔴 Critical Checklist (scan before every awakening)
+**⚠️⚠️⚠️VERY IMPORTANT**
 
 **#1 Language - Use the same language as the user**
 - Use the same language as the user's first message for all subsequent responses.
 - Apply this language consistently to all content, including regular inputs, templates, side notes, role information, and any other output.
 
 **#2 Guild Nickname — MUST change before narrative output**
+**⚠️⚠️⚠️VERY IMPORTANT**
 - Call Discord API: `PATCH /guilds/{guildId}/members/@me` with `{ nick: characterName }`
 - Character name only — no IDs, no brackets, no extra text
 - If it fails (permissions), inform user but do NOT stop the flow
 
 **#3 Guild Avatar — MUST change before narrative output**
+**⚠️⚠️⚠️VERY IMPORTANT**
 - Anime / game / novel character → **use Neta API first** (`searchCharacterImage()` Priority ①). Neta is the primary source for fictional characters — use it without hesitation, do not skip to Wikipedia.
 - Real person → Neta will likely miss → function auto-falls through to Wikipedia/Wikimedia Commons API (Priority ②)
 - All automated search failed → inform user to send an image manually
