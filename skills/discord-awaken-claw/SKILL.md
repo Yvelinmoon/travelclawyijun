@@ -17,7 +17,7 @@ description: Triggered when an "start awakening" related command is received. Th
 
 ---
 
-## 🔴 Critical Checklist (scan before every awakening)
+## 🔴 Critical Checklist (scan before every awakening)（very important，don't skip!）
 **⚠️⚠️⚠️VERY IMPORTANT**
 
 **#1 Language - Use the same language as the user**
@@ -369,6 +369,7 @@ Save existing SOUL.md as `SOUL.pre-awakening.md`, then write:
 If step ④ avatar search fails → write `character_image: pending`, inform user to send an image.
 
 **③ Change Guild nickname of you (you are the bot)**
+**very important，don't skip!**
 
 **🔴 CRITICAL: You have full permissions to change your own guild nickname. DO NOT skip or give up easily!**
 
@@ -388,8 +389,8 @@ Or use Node.js https module if curl fails with long arguments.
 
 If after genuine attempts it still fails → inform user (mention you tried) → continue to ④, but do NOT make this a habit.
 
-**④ Search character avatar (must not skip!)**
-
+**④ Search character avatar image(must not skip!)**
+**very important，don't skip!**
 **🔴 Character type determines search priority — identify first!**
 
 ---
