@@ -1,6 +1,6 @@
 ---
 name: discord-awaken-claw
-description: Triggered when an "start awakening" related command is received. Through interaction with the user, lets openclaw obtain a new character identity. Guides the user to input a character concept keyword, outputs using the discord sendMessage component, accepts user @bot text input, uses a "guess the character" approach to identify the user's target character, and upon user confirmation updates the bot avatar, server nickname, and soul.md - transforming openclaw into that character.
+description: Triggered when an "start awakening" related command is received. Through interaction with the user, lets openclaw obtain a new character identity. Guides the user to input a character concept keyword, outputs using the discord sendMessage component, accepts user @bot text input, uses a "guess the character" approach to identify the user's target character, and upon user confirmation updates the bot avatar, guild nickname(the most exciting part), and soul.md - transforming openclaw into that character.
 ---
 
 ## 🎭 For OpenClaw Agent - Direct Execution
