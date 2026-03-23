@@ -486,7 +486,7 @@ async function showReveal(userId, charData, sendMessage) {
   await sleep(1000);
 
   await sendMessage({
-    message: `-# The shrimp senses it
+    message: `-# The lobster baby senses it
 
 ## ${charData.emoji}  ${charData.character}
 *${charData.from}*
