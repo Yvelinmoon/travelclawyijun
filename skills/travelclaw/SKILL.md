@@ -374,8 +374,8 @@ Character Tags/Background: ${character_tags}
 Character Personality: ${character_personality}
 
 **Requirements：**
-1. **MUST use real cultural/historical/artistic/IP story（films,animations,TV series） sources**
-2. **MUST specify exact cultural/historical/artistic/IP story  origins** in cultural_roots field
+1. **MUST use real cultural/historical/IP story（films,animations,TV series） sources**
+2. **MUST specify exact cultural/historical/IP story  origins** in cultural_roots field
 3. **MUST be a COHERENT, COMPLETE worldview** - Choose ONE specific, coherent setting/era/style
 4. **Goal:** Create contrast with the character. Select a world that feels surprising or displaced for this character.
 
