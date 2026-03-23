@@ -362,8 +362,6 @@ From SOUL.md extract:
 
 **Output loading state:** `The boundaries between dimensions are blurring...` in a code block.
 
-**🔴ATTENTION Strongly Prohibited！！！！！:** Using `list_spaces`, `suggest_keywords`, `suggest_tags`, or `get_hashtag_info` APIs. These are replaced with LLM generation.
-
 #### 2-A: LLM Worldview Generation
 
 Call LLM to generate a creative worldview based on character info:
@@ -375,11 +373,11 @@ Character: ${character_name}
 Character Tags/Background: ${character_tags}
 Character Personality: ${character_personality}
 
-**STRICT REQUIREMENTS - DO NOT VIOLATE:**
-1. **MUST be based on real cultural/historical/artistic sources** - No completely fictional worlds without cultural roots
+**Requirements:**
+1. **MUST be based on real cultural/historical/artistic sources**
 2. **MUST specify exact cultural/historical/artistic origins** in cultural_roots field
-3. **MUST be a COHERENT, COMPLETE worldview** - Choose ONE specific setting/era/style, do NOT mashup unrelated concepts (NO "Cyber Tang Dynasty", NO random combinations)
-4. **PRIMARY OBJECTIVE: CREATE CONTRAST with the character** - The world should feel surprising, displacement, or ironic when this character enters it. Only choose resonance if contrast feels truly impossible.
+3. **MUST be a COHERENT, COMPLETE worldview** - Choose ONE specific, coherent setting/era/style
+4. **Goal:** Create contrast with the character. Select a world that feels surprising or displaced for this character.
 
 **ACCEPTABLE Source Categories (choose from these):**
 
