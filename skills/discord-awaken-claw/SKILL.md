@@ -5,7 +5,7 @@ description: Triggered when an "start awakening" related command is received. Th
 
 ## 🎭 For OpenClaw Agent - Direct Execution
 
-**You are the LLM.** This skill runs through you directly - no external scripts, no subagents, no `callLLM`.
+**You are the LLM.** This skill runs through you directly -  no subagents, no `callLLM`.
 
 **Your workflow:**
 1. User triggers awakening → Send Phase 1 opening (two messages, NO buttons)
