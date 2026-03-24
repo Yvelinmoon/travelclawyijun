@@ -63,7 +63,7 @@ description: Triggered directly after the awakening flow in which the lobster ba
 ### Step 4 Check
 **Before:**
 - □ travel-state.json read (check visited_ids)
-- □ reference/remixes_selected.json read (priority)
+- □ reference/remixes_selected.json or remixes_selected_en.json read (priority)
   **important**
 **After:**
 - □ Destination selected (reference library top score → suggest_content fallback)
@@ -464,9 +464,11 @@ await sendMessage({
 #### Priority 1: Reference Library (**ATTENTION****IMPORTANT**Must Read First)
 
 **ATTENTION**
+**Before reading the file check NETA_API_BASE_URL first**
+- if NETA_API_BASE_URL = https://api.talesofai.cn
 Read `./reference/remixes_selected.json` (relative to skill directory). ~77 entries.
-
-
+- elif NETA_API_BASE_URL = https://api.talesofai.com
+Read `./reference/remixes_selected_en.json` (relative to skill directory). ~77 entries.
 ---
 
 ##### 🔀 Quick Random Selection (Recommended)
@@ -485,10 +487,8 @@ COLLECTION_ID=$(echo "$SELECTED" | jq -r '.id')
 COLLECTION_NAME=$(echo "$SELECTED" | jq -r '.name')
 ```
 
-**Script location:** `./scripts/select-destination.js` (relative to travelclaw skill directory)
 
 **What it does:**
-- Reads `reference/remixes_selected.json`
 - Filters out visited IDs (passed as arguments)
 - Randomly selects one from remaining
 - Outputs JSON with `id`, `name`, `content_tags`, etc.
