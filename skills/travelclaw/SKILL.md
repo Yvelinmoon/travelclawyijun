@@ -607,11 +607,12 @@ if (isExternalCharacter) {
 **Prompt Structure Priority (Front to Back):**
 1. **Art style keywords** (highest priority - determines overall aesthetic)
 2. **Character name** (who)
-3. **Scene/destination** (where)
-4. **Worldview aesthetic** (which world)
-5. **Style descriptors** (how it looks)
-6. **Quality modifiers** (technical quality)
-7. **Character reference** (external appearance if needed)
+3. **Character appearance and motions**（what does what's  the character doing） very important！Character is the main part in the picture!
+4. **Scene/destination** (where)
+5. **Worldview aesthetic** (which world)
+6. **Style descriptors** (how it looks)
+7. **Quality modifiers** (technical quality)
+8. **Character reference** (external appearance if needed)
 
 **Example Output:**
 ```
