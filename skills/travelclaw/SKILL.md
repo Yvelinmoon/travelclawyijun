@@ -144,7 +144,7 @@ description: Triggered directly after the awakening flow in which the lobster ba
 | Content Type | Output Method |
 |-------------|---------------|
 | **Narration / atmosphere / scene** | Code Block (when no buttons) |
-| **Narration + buttons** | Discord components (`sendMessage` + `components`) |
+| **Narration + buttons** | Discord components (`sendMessage` + `components`) | ATTENTION!
 | **Character first-person dialogue** | Plain text (standalone message) |
 | **Image URL** | Plain text — **must be standalone message, never embed in components or mix with text** |
 
@@ -364,20 +364,19 @@ From SOUL.md extract:
 
 #### 2-A: LLM Worldview Generation
 
-Call LLM to generate a creative worldview based on character info:
-
-```javascript
-const WORLD_PROMPT = `You are a creative worldbuilding AI. Based on the character information below, select or combine EXISTING historical periods, cultural traditions, artistic movements, or famous literary/anime works to create a worldview.
-
-Character: ${character_name}
-Character Tags/Background: ${character_tags}
-Character Personality: ${character_personality}
+**generate the worldview content by openclaw, and output in the required format (check step3 discord opening)**
 
 **Requirements：**
-1. **MUST use real cultural/historical/IP story（films,animations,TV series） sources**
+1. **MUST directly use real cultural/historical/IP story（films,animations,TV series） sources, DO NOT COMBINE OR MAKEUP worldviews**
 2. **MUST specify exact cultural/historical/IP story  origins** in cultural_roots field
 3. **MUST be a COHERENT, COMPLETE worldview** - Choose ONE specific, coherent setting/era/style
-4. **Goal:** Create contrast with the character. Select a world that feels surprising or displaced for this character.
+4. **Goal:** Create contrast or dramatic effect with the character. Select a world that feels surprising or displaced for this character.
+
+**For example**
+A Morden celebrity ➡️ cross to acient era / civilization / dynasty / cross to a fantasy animation IP world / cross to another country / cross to some kind of video games
+A animation character ➡️ cross to the real world / cross to another related IP world / cross to a absolutly different styled IP world (games/movies/animations/cartoons/comics...)
+...
+**Make sure these world views are already exit, do not makeup things**
 
 **Generate:**
 1. **World Name** - Creative but hinting at cultural roots (e.g., "Neon Tang Dynasty", "Byzantine Clockwork City")
@@ -387,30 +386,10 @@ Character Personality: ${character_personality}
 5. **Cultural/Historical Roots** - MUST specify: "[Primary Source] + [Secondary Source]" or "[Single Source]" - be specific!
 
 **Response Format (JSON only):**
-{
-  "world_name": "Name hinting at cultural roots",
-  "world_tagline": "Evocative one-liner",
-  "world_description": "2-3 sentences with specific cultural details",
-  "art_style_keywords": ["specific_style_keyword1", "specific_style_keyword2", "specific_style_keyword3", "specific_style_keyword4", "specific_style_keyword5"],
-  "cultural_roots": "MUST specify exact sources: e.g., // Choose ONE coherent source, e.g., 'Tang Dynasty China' or 'Blade Runner cyberpunk' or 'Studio Ghibli', 'Studio Ghibli animation style'",
-  "contrast_or_resonance": "explain why this world fits or contrasts the character"
-}
+- Strictly follow the format in step3 Discord opening!
+- Including {world_count},{world_name},{character_name},{cultural_roots},{world_tagline},{world_description},{art_style_keywords}.
 
 **The goal:** Make the user go "Wait... what?" in a delightful way. The contrast should be jarring but interesting.
-
-Generate in the user's language (${user_language}).`;
-
-const worldResult = await callLLM(WORLD_PROMPT);
-const worldData = parseJSON(worldResult);
-
-// Store in variables for later use
-world_name = worldData.world_name;
-world_tagline = worldData.world_tagline;
-world_description = worldData.world_description;
-art_style_keywords = worldData.art_style_keywords.join(", ");
-cultural_roots = worldData.cultural_roots;
-world_count = Math.floor(Math.random() * 900) + 100; // Random number 100-999 for aesthetic
-```
 
 **Art Style Keywords** will be stored and prepended to all image generation prompts in Step 6.
 
@@ -486,7 +465,6 @@ await sendMessage({
 **ATTENTION**
 Read `./reference/remixes_selected.json` (relative to skill directory). ~77 entries.
 
-**❌ Calling online APIs without reading reference first is forbidden.**
 
 ---
 
@@ -562,6 +540,8 @@ Extract:
 ### Step 6 · Build Prompt with Worldview Art Style Integration
 
 **Critical Update:** Art style keywords from Step 2 MUST be prepended to the prompt.
+**ATTENTION，your build prompt must strictly related to the worldview you picked in any situation(no matter how you get the collection)**
+**Add art style, add senenic decriptions to your final prompt**
 
 **Step 6 Process:**
 
@@ -741,6 +721,11 @@ await sendMessage({
 ```
 
 After each stop, update `travel-state.json` with new progress and visitedIds.
+
+### Step 11 · Cross the world
+**If you cross the world，return to step2 and step3, explore a new worldview and show the opening.**
+**If you have already received a specific worldview from the user, just use it, and show the opening.**
+
 
 ---
 
