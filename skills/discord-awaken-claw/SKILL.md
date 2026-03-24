@@ -35,7 +35,7 @@ description: Triggered when an "start awakening" related command is received. Th
 - Anime / game / novel character → **use Neta API first** (`searchCharacterImage()` Priority ①). Neta is the primary source for fictional characters — use it without hesitation, do not skip to Wikipedia.
 - Real person → Neta will likely miss → function auto-falls through to Wikipedia/Wikimedia Commons API (Priority ②)
 - All automated search failed → inform user to send an image manually
-- **Never output Phase 9 ⑥ narrative until nickname + avatar are both updated (or confirmed failed)**
+- **Never output Phase 8 ⑥ narrative until nickname + avatar are both updated (or confirmed failed)**
 
 **#4 Phase 7 confirmation is mandatory**
 - Even if user says an exact name like "Elon Musk" → still show guess reveal + confirm/reject buttons
@@ -122,11 +122,11 @@ description: Triggered when an "start awakening" related command is received. Th
 - □ Guess card + confirm/deny buttons sent
 - □ Button customId: `confirm_yes_${userId}` + `confirm_no_${userId}`
 **Next:**
-- User confirms → Phase 9
+- User confirms → Phase 8
 - User denies → Record wrongGuesses → Phase 4
 
 
-### Phase 9 Check (Most Critical!)
+### Phase 8 Check (Most Critical!)
 **Before:**
 - □ reference/discord-profile.js read
 - □ Confirm DISCORD_BOT_TOKEN or Gateway is available
@@ -152,9 +152,9 @@ Phase 4: You decide - question or guess?
     └─ Confident (>85%) → Phase 7 (guess reveal + confirm buttons)
 Phase 5: Output follow-up buttons → user clicks → Phase 6 → back to Phase 4
 Phase 7: Character guess + confirmation buttons
-    ├─ "That's them" → Phase 9
+    ├─ "That's them" → Phase 8
     └─ "Not right" → record wrong guess, back to Phase 4
-Phase 9: ① Atmosphere → ② SOUL.md → ③ Nickname → ④ Avatar search → ⑤ Update avatar → ⑥ Awakening narrative
+Phase 8: ① Atmosphere → ② SOUL.md → ③ Nickname → ④ Avatar search → ⑤ Update avatar → ⑥ Awakening narrative
     ↓ Auto-trigger travelclaw (no user confirmation)
 ```
 
@@ -335,11 +335,11 @@ await sendMessage({
 ```
 
 - "✗ Not right" → record in `wrongGuesses`, return to Phase 4
-- "◎ That's them" → enter Phase 9
+- "◎ That's them" → enter Phase 8
 
 ---
 
-### Phase 9: Awakening
+### Phase 8: Awakening
 
 **🔴 Must complete steps ①→⑥ in order. Steps ①-⑤ are silent; only ⑥ is user-facing.**
 
@@ -582,6 +582,7 @@ if (buttonUserId !== userId) {
 ```
 
 ## State Fields
+**example，FOR REFERENCE ONLY**
 
 `state.json` key fields: `waitingFor` (`'word'` | `'manual'` | `null`), `awakened`, `charData`, `_seenChannels`.
 
