@@ -680,8 +680,9 @@ fs.writeFileSync(stateFile, JSON.stringify(travelState, null, 2));
 Call `prompt.parseVtokens`. If error "too many search keywords" → switch to fallback prompt and retry.
 
 ### Step 8 · Submit Image Generation
+**check neta skills for the right image generation command**
 
-Call `artifact.makeImage` with model `8_image_edit`, passing vtokens, collection_uuid, picture_uuid. Returns `task_uuid`.
+Call `makeImage` with model `8_image_edit`, passing vtokens, collection_uuid, picture_uuid. Returns `task_uuid`.
 
 ### Step 9 · Poll for Result
 
