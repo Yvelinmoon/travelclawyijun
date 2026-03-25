@@ -350,26 +350,7 @@ await sendMessage({ message: '…………\nHatching' });
 await sleep(1200);
 ```
 
-**② Back up and update SOUL.md**
-
-Save existing SOUL.md as `SOUL.pre-awakening.md`, then write:
-
-```markdown
-## Character Information
-
-**Name**: {charData.character}
-**Identity**: {charData.from}
-**Trait**: {charData.desc}
-**Theme color**: {charData.color}
-**Emoji**: {charData.emoji}
-
-**Character image**: {imageUrl}  ← 🔴 Required! travelclaw uses this to extract picture_uuid
-**Character Apparence description: {char.apparence}** ← 🔴 Required! describe by yourself, especially for external characters(searched from wikimedia)
-```
-
-If step ④ avatar search fails → write `character_image: pending`, inform user to send an image.
-
-**③ Change Guild nickname of you (you are the bot)**
+**② Change Guild nickname of you (you are the bot)**
 **very important，don't skip!**
 
 **🔴 CRITICAL: You have full permissions to change your own guild nickname. DO NOT skip or give up easily!**
@@ -388,11 +369,18 @@ Or use Node.js https module if curl fails with long arguments.
 
 **⚠️ Permission note:** Bots can always change their own nickname in guilds where they have membership. If the API call returns an error, debug it — do NOT assume "no permission" and skip. Only skip if you've tried multiple methods and all genuinely fail.
 
-If after genuine attempts it still fails → inform user (mention you tried) → continue to ④, but do NOT make this a habit.
+If after genuine attempts it still fails → inform user (mention you tried) → continue to 4., but do NOT make this a habit.
 
-**④ Search character avatar image(must not skip!)**
+**③ Search character avatar image(must not skip!)**
 **very important，don't skip!**
 **🔴 Character type determines search priority — identify first!**
+**🔴 Search Priority Summary:**
+
+| Character Type | Priority ① | Priority ② | Fallback |
+|----------------|------------|------------|----------|
+| **Anime / Game / Novel** | Neta API (`request_character_or_elementum`) | Wikipedia/Wikimedia | User-provided |
+| **Real Person** | Wikipedia/Wikimedia | Neta API (optional) | User-provided |
+| **External IP / OC** | Neta API (check if exists) | User-provided | — |
 
 ---
 
@@ -451,19 +439,12 @@ curl -s "https://commons.wikimedia.org/w/api.php?action=query&titles=File:{filen
 
 YOU MUST inform user: `❌ Auto avatar search failed. Please send a character image or image link.`
 
-**Found URL → proceed to ⑤. All paths failed → skip ⑤, proceed to ⑥.**
+**Found URL → proceed to ④. All paths failed → skip ④, proceed to ⑤.**
 
 ---
 
-**🔴 Search Priority Summary:**
 
-| Character Type | Priority ① | Priority ② | Fallback |
-|----------------|------------|------------|----------|
-| **Anime / Game / Novel** | Neta API (`request_character_or_elementum`) | Wikipedia/Wikimedia | User-provided |
-| **Real Person** | Wikipedia/Wikimedia | Neta API (optional) | User-provided |
-| **External IP / OC** | Neta API (check if exists) | User-provided | — |
-
-**⑤ Update server avatar**
+**④ Update server avatar**
 
 Download the image and convert to base64, then call Discord API:
 
@@ -487,6 +468,24 @@ req.end();
 ```
 
 If fails → inform user → continue to ⑥.
+
+**⑤ Back up and update SOUL.md**
+**Based on the character information you have, for example, the character imformation from neta request character or wikimedia**
+
+Save existing SOUL.md as `SOUL.pre-awakening.md`, then write:
+
+```markdown
+## Character Information
+
+**Name**: {charData.character}
+**Identity**: {charData.from}
+**Trait**: {charData.desc}
+**Theme color**: {charData.color}
+**Emoji**: {charData.emoji}
+
+**Character image**: {imageUrl}  ← 🔴 Required! travelclaw uses this to extract picture_uuid
+**Character Apparence description: {char.apparence}** ← 🔴 Required! describe by yourself, especially for external characters(searched from wikimedia)
+```
 
 **⑥ Output awakening narrative + world arrival (one sendMessage call)**
 
