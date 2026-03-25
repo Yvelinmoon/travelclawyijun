@@ -82,7 +82,7 @@ description: Triggered directly after the awakening flow in which the lobster ba
 **Before:**
 - □ character_name, picture_uuid, world_name ready
 **After:**
-- □ Placeholders replaced ({@character} → @{character_name})
+- □ Placeholders replaced ({@character} → @character_name)
 - □ picture_uuid appended (if present)
 - □ Worldview elements woven into prompt
 **Next:** → Step 7
@@ -386,7 +386,7 @@ A animation character ➡️ cross to the real world / cross to another related 
 
 **Response Format (JSON only):**
 - Strictly follow the format in step3 Discord opening!
-- Including {world_count},{world_name},{character_name},{cultural_roots},{world_tagline},{world_description},{art_style_keywords}.
+- Including {world_count},{world_name},character_name,{cultural_roots},{world_tagline},{world_description},{art_style_keywords}.
 
 **The goal:** Make the user go "Wait... what?" in a delightful way. The contrast should be jarring but interesting.
 
@@ -410,7 +410,7 @@ await sendMessage({
 
 ## 【Soul Frequency Scan】
 *The fabric of reality shifts...*
-*${character_name} resonates with the essence of* **${world_name}**
+*$character_name resonates with the essence of* **${world_name}**
 
 \`▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓\` **Match Found**
 
@@ -425,7 +425,7 @@ await sendMessage({
 > ${world_description}
 
 ---
-*${character_name} steps into ${world_name} —*
+*$character_name steps into ${world_name} —*
 *where ${art_style_keywords.split(',')[0]} meets ${art_style_keywords.split(',')[1]}*
 
 **Art Style:** ${art_style_keywords}`,
@@ -539,7 +539,7 @@ Extract:
 - `json_data.name` → destination name
 - `json_data.cta_info.launch_prompt.core_input` → prompt template (preferred)
 - `json_data.cta_info.choices[0].core_input` → fallback
-- None available → `@{character_name}, {world_name}, {destination_name}, high quality illustration`
+- None available →  `@character_name, {world_name}, {destination_name}` + description of the event/motion/travel details in this destination
 
 ### Step 6 · Build Prompt with Worldview Art Style Integration
 
@@ -559,13 +559,13 @@ const world_name = worldData.world_name || '';
 
 2. **Get collection prompt template:**
 **Attention，check the character detail before building your final prompt!**
-- If it's a NETA internal character, use @{character_name} to activate the character apparence;
+- If it's a NETA internal character, use @character_name to activate the character apparence;
 - If it's an external character, you must use the reference image in soul.md, and add extra apparence description in in the prompt（check soul.md👀）.
 
 ```javascript
 // From Step 5 collection
 let prompt_template = collectionData.prompt_template || 
-  `@{character_name} at {destination_name}, ${world_name} style, high quality illustration`;
+  `@character_name at {destination_name}, ${world_name} style, high quality illustration`;
 ```
 
 3. **Build final prompt with ART STYLE FIRST:**
@@ -579,7 +579,7 @@ if (art_style_keywords) {
 }
 
 // Priority 2: Character reference
-finalPrompt += `@{character_name}`;
+finalPrompt += `@character_name`;
 
 // Priority 3: Scene/destination description
 finalPrompt += `, at ${destination_name}, ${world_name} aesthetic`;
@@ -618,13 +618,13 @@ if (isExternalCharacter) {
 **Example Output:**
 ```
 // For a Tang Dynasty historical setting:
-"Tang Dynasty court aesthetics, imperial palace gardens, traditional silk robes and architecture, @{character_name}, historical Chinese setting, elegant and refined, golden hour lighting, high quality, detailed, artistic composition"
+"Tang Dynasty court aesthetics, imperial palace gardens, traditional silk robes and architecture, @character_name, historical Chinese setting, elegant and refined, golden hour lighting, high quality, detailed, artistic composition"
 
 // For an Impressionist painting world:
-"Loose brushstrokes, dappled light, pastel color palette, plein air composition, @{character_name}, at Monet's Garden Portal, Impressionist aesthetic, soft edges and vibrant natural light, high quality, detailed, artistic composition"
+"Loose brushstrokes, dappled light, pastel color palette, plein air composition, @character_name, at Monet's Garden Portal, Impressionist aesthetic, soft edges and vibrant natural light, high quality, detailed, artistic composition"
 
 // For a Byzantine icon world:
-"Gold leaf background, flat perspective, religious iconography style, rich jewel tones, halos, @{character_name}, at Cathedral of Eternal Icons, Byzantine aesthetic, stylized figures and ornate patterns, high quality, detailed, artistic composition"
+"Gold leaf background, flat perspective, religious iconography style, rich jewel tones, halos, @character_name, at Cathedral of Eternal Icons, Byzantine aesthetic, stylized figures and ornate patterns, high quality, detailed, artistic composition"
 ```
 
 **Storage:**
@@ -667,7 +667,7 @@ Call `artifact.task` every 500ms. Flow: `PENDING` → `MODERATION` → `SUCCESS`
 
 ```{scene description: 1-2 sentences, sensory details}```
 
-{character_name}: {first-person reaction, in-character}
+character_name: {first-person reaction, in-character}
 (action/expression, 1 sentence)
 ```
 
