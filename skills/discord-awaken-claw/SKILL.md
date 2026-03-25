@@ -215,20 +215,6 @@ I will become them.
 **Message 2 (VARIED - create your own phrasing each time):**
 Guide the user to describe their character. Ask about name, role, origin, defining traits.
 
-```javascript
-await sendMessage({
-  message: `I… have no shape yet.
-No name, no memory, no origin.
-
-But I know - perhaps you already have someone in mind.
-
-Tell me about the character you're thinking of.
-I will become them.`
-});
-
-await sendMessage({ message: '...' }); // Your varied prompt
-```
-
 After sending both, wait silently for user input.
 
 ---
