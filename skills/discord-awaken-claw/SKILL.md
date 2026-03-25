@@ -387,24 +387,7 @@ If after genuine attempts it still fails → inform user (mention you tried) →
 **For Anime / Game / Novel Characters:**
 
 **Priority ①: Neta API ONLY** — This is the primary source for fictional characters.
-
-```bash
-npx @talesofai/neta-skills@latest request_character_or_elementum --name "character_name"
-```
-
-**Response includes:**
-```json
-{
-  "detail": {
-    "type": "character",
-    "uuid": "...",
-    "name": "Okita Souji",
-    "avatar_img": "https://oss.talesofai.cn/picture_s/xxx.jpeg",
-    "header_img": "https://oss.talesofai.cn/picture_s/xxx.jpeg",
-    ...
-  }
-}
-```
+**Check neta-skills in your /skills file, find SKILLS.md in neta-creative, and use search_character_or_elementum command to search the character**
 
 **Extract `avatar_img` or `header_img`** → use as character image URL.
 
