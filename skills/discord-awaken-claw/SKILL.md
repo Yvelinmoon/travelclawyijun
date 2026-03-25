@@ -389,7 +389,7 @@ If after genuine attempts it still fails → inform user (mention you tried) →
 **Priority ①: Neta API ONLY** — This is the primary source for fictional characters.
 
 ```bash
-npx @talesofai/neta-skills@latest request_character_or_elementum --name "{character_name}"
+npx @talesofai/neta-skills@latest request_character_or_elementum --name "character_name"
 ```
 
 **Response includes:**
