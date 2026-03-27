@@ -170,6 +170,7 @@ Record user's text, then immediately proceed to step 3.
 - Excute the character creation task based on character-creation.md
 
 **🔴 Do NOT output the question or guess as plain text. Always use sendMessage with `components`. See Checklist #4.**
+**🔴 Before you output the guess format, you MUST get the full profile of the character**
 
 **Guess format:**
 ```json
