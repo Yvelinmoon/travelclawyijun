@@ -279,10 +279,7 @@ If after genuine attempts it still fails → inform user (mention you tried) →
 **For Anime / Game / Novel Characters:**
 
 **Priority ①: use neta-skills ONLY** — This is the primary source for fictional characters.
-**USE neta-avatar-search.js to search character in neta, this script is in the /reference folder of this skill**
-
-if the script doesn't work, search neta-skills in your workspace skills folder, and try method in neta-creative.
-
+Check method in neta-skills, be more specifically, the neta-creative sub skill.
 
 **Extract `avatar_img` or `header_img`** → use as character image URL.
 
