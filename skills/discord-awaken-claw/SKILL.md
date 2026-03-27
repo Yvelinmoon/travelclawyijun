@@ -161,7 +161,7 @@ Record user's text, then immediately proceed to step 3.
 - **<85% confident** → generate question → **sendMessage with option buttons**
 **ATTENTION: Sonmetimes user may send you a character name directly. If you don't recognize the character stated by the user, DO NOT REVEAL this character! You need to then excute two steps below:**
 
-#### ① Use request_character_or_elementum in neta-skills to search for the character 
+#### ① Use character-search in neta-skills to search for the character 
 - Tell user you are thinking about the character.
 - check if the character exist in NETA character library.
 - Use the character profile you get.
@@ -273,7 +273,7 @@ If after genuine attempts it still fails → inform user (mention you tried) →
 
 | Character Type | Priority ① | Priority ② | Fallback |
 |----------------|------------|------------|----------|
-| **Anime / Game / Novel** | reference character-search.md in neta-creative folder, neta-skills (`request_character_or_elementum`) | Wikipedia/Wikimedia | User-provided |
+| **Anime / Game / Novel** | reference character-search.md in neta-creative folder, neta-skills | Wikipedia/Wikimedia | User-provided |
 | **Real Person** | Wikipedia/Wikimedia | Neta API (optional) | User-provided |
 | **External IP / OC** | Neta API (check if exists) | User-provided | — |
 
