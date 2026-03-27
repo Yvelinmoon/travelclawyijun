@@ -141,7 +141,7 @@ I will become them.
 
 **Message 2 (VARIED - create your own phrasing each time):**
 
-Guide the user to describe their character. Ask about name, role, origin, defining traits.
+Guide the user to describe their character. Ask about role, origin, defining traits... and the lobster baby will finally find its soul.
 
 After sending both, wait silently for user input.
 
