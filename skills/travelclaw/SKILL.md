@@ -398,8 +398,10 @@ add selected ID to `pendingIds` immediately (atomic lock).
 
 
 #### 3-A Explore the Stop (Silent)
-##### Priority 1: Reference Library (**ATTENTION****IMPORTANT**Must Read First)
+**All travel stop selections, by whatever means, must adhere strictly to the world’s lore and setting.No collection or stop should be chosen that later conflicts with the established worldview.**
 
+##### Priority 1: Reference Library (**ATTENTION****IMPORTANT**Must Read First)
+**Choose by collection names and tags**
 **ATTENTION**
 **Before reading the file check NETA_API_BASE_URL first**
 - if NETA_API_BASE_URL = https://api.talesofai.cn
