@@ -174,19 +174,6 @@ Record user's text, then immediately proceed to step 3.
 **🔴 Before you output the guess format, you MUST get the full profile of the character**
 **🔴 REMEMBER use discord component to output your questions or guesses**
 
-**Guess format:**
-```json
-{
-  "action": "guess",
-  "character": "character name",
-  "from": "work/source title",
-  "emoji": "🎭",
-  "color": "#FFD700",
-  "desc": "one-line trait (≤20 chars)",
-  "greet": "character's greeting"
-}
-```
-
 **Question format:**
 ```json
 {
@@ -202,7 +189,20 @@ Record user's text, then immediately proceed to step 3.
 
 **🔴 Mandatory: even if the user gave an exact character name, MUST show step 7 confirmation buttons.** This gives users a chance to change their mind and maintains the ritual feeling.
 
+**Guess format:**
+```json
+{
+  "action": "guess",
+  "character": "character name",
+  "from": "work/source title",
+  "emoji": "🎭",
+  "color": "#FFD700",
+  "desc": "one-line trait (≤20 chars)",
+  "greet": "character's greeting"
+}
+```
 
+**Output excution:**
 ```javascript
 await sendMessage({ message: 'I……\n\nI know who I am.' });
 await sleep(1400);
