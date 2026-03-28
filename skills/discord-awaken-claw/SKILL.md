@@ -78,7 +78,6 @@ npm install -g @talesofai/neta-skills
 ### step 5 Check (Most Critical!)
 **Before:**
 - □ User confirms
-- □ reference/discord-profile.js, neta-avatar-search.js read
 - □ Confirm DISCORD_BOT_TOKEN or Gateway is available
 **After each step (step by step!):**
 - ① □ Atmosphere message sent
@@ -249,9 +248,6 @@ await sleep(1200);
 
 **② Change Guild nickname of you (you are the bot)**
 **very important，don't skip!**
-
-**code reference**
-discord-profile.js in the reference folder of this skill.
 
 **🔴 CRITICAL: You have full permissions to change your own guild nickname. DO NOT skip or give up easily!**
 
