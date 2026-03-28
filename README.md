@@ -39,10 +39,6 @@ AI 角色旅行系统 — 让觉醒的角色在任意世界中展开独特的 5 
 
 <div align="center">
 
-![觉醒过程](assets/screenshots/img_v3_02106_4d1db276-a51e-4b23-80a9-282bc8bf71ag.jpg)
-
-![世界观展示](assets/screenshots/img_v3_02106_2fbdf0f3-2bdb-4d9a-a7cf-9d65e9c1932g.jpg)
-
 ![旅行站点](assets/screenshots/img_v3_02106_e7d58a6b-f636-4b2c-806c-1dee0bf2e3dg.jpg)
 
 </div>
@@ -65,7 +61,7 @@ travelclaw/
 # 环境变量
 DISCORD_BOT_TOKEN=xxx
 NETA_TOKEN=xxx
-NETA_API_BASE_URL=https://api.talesofai.com
+NETA_API_BASE_URL=xxx
 ```
 
 ## 📝 触发方式
@@ -78,7 +74,3 @@ NETA_API_BASE_URL=https://api.talesofai.com
 
 - [neta-skills](https://github.com/talesofai/neta-skills) — Neta 平台 API 工具包
 - [OpenClaw](https://github.com/talesofai/openclaw) — Discord AI 代理框架
-
----
-
-Made with 💙 by Yvelinmoon
