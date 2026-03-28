@@ -38,7 +38,9 @@ AI 角色旅行系统 — 让觉醒的角色在任意世界中展开独特的 5 
 ## 📸 效果展示
 
 <div align="center">
+    
 ![旅行站点](assets/screenshots/img_v3_02106_022f7d4f-7858-4db0-af0a-22b99759103g.jpg)
+
 </div>
 
 ## 🛠️ 项目结构
