@@ -275,16 +275,16 @@ If after genuine attempts it still fails → inform user (mention you tried) →
 
 | Character Type | Priority ① | Priority ② | Fallback |
 |----------------|------------|------------|----------|
-| **Anime / Game / Novel** | reference character-search.md in neta-creative folder, neta-skills | Wikipedia/Wikimedia | User-provided |
-| **Real Person** | Wikipedia/Wikimedia | Neta API (optional) | User-provided |
-| **External IP / OC** | Neta API (check if exists) | User-provided | — |
+| **Anime / Game / Novel** | load neta skill, find character-search.md in neta-creative folder | Wikipedia/Wikimedia | User-provided |
+| **Real Person** | Wikipedia/Wikimedia | Neta skill (optional) | User-provided |
+| **External IP / OC** | Neta skill (check if exists) | User-provided | — |
 
 ---
 
 **For Anime / Game / Novel Characters:**
 
 **Priority ①: use neta-skills ONLY** — This is the primary source for fictional characters.
-Check method in neta-skills, be more specifically, the neta-creative sub skill.
+Load neta-skill, be more specifically, find method in the neta-creative sub skill.
 
 **Extract `avatar_img` or `header_img`** → use as character image URL.
 
