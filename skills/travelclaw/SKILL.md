@@ -523,7 +523,7 @@ fs.writeFileSync(stateFile, JSON.stringify(travelState, null, 2));
 **If you cross the world，return to step2 and step3, explore a new worldview and show the opening.**
 **If you have already received a specific worldview from the user, just use it, and show the opening.**
 **If you discover that all 5 stops of the current world have been fully explored while executing the cron scheduled task,automatically discover a new world and explore one stop in it.**
-
+**Every time you explore 1 new stop or cross a new world, UPDATE travel-state.json!**
 
 ---
 
