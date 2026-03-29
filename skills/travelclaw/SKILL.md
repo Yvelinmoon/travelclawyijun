@@ -293,7 +293,7 @@ From SOUL.md extract:
 **Requirements：**
 1. **MUST directly use real cultural/historical/IP story（films,animations,TV series） sources, DO NOT COMBINE OR MAKEUP worldviews**
 2. **MUST be a COHERENT, COMPLETE worldview**
-3. **Goal** Create contrast or dramatic effect with the character. Select a world that feels surprising or displaced for this character.
+3. **Goal** Create contrast or dramatic effect with the character. Select a world that feels surprising or displaced for this character(The World you select MUST depend on the character setting).
 4. **Diversity** You should generate diverse and authentic worldviews to the fullest extent.Every worldview you create must possess a distinct, concrete art style and cultural identity.
 
 **For example**
