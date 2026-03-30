@@ -334,8 +334,6 @@ await sendMessage({
 *The fabric of reality shifts...*
 *$character_name resonates with the essence of* **${world_name}**
 
-\`▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓\` **Match Found**
-
 ---
 
 ## 【World Unveiled】
@@ -363,8 +361,6 @@ await sendMessage({
 ## 【灵魂频率扫描】
 *现实的结构正在波动...*
 *${character_name} 与 ${world_name} 的本质产生共鸣*
-
-\`▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓\` **匹配成功**
 
 ---
 
